@@ -20,6 +20,7 @@
 
 #include <QObject>
 #include "oculus/ccOculus.h"
+#include "ccOculusController.h"
 
 class QAction;
 class QMenu;
@@ -46,9 +47,9 @@ private:
     
 	ccMainAppInterface *m_appInterface;
 
-	QAction *m_actionEnable;
-
 	ovrSession m_ovrSession;
+
+	ccOculusController *m_controller;
 };
 
 #endif

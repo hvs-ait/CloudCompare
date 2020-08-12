@@ -24,4 +24,11 @@
 
 #include "ccMainAppInterface.h"
 
+void ccOculusTouch::initController()
+{
+	ccLog::Print("Oculus Touch Controller connected!");
+}
 
+void ccOculusTouch::update()
+{
+}

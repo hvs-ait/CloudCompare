@@ -24,10 +24,13 @@
 
 #include "ccMainAppInterface.h"
 
+#include "ccOculusTouch.h"
+
 
 ccOculusControllerManager::ccOculusControllerManager( ccMainAppInterface *appInterface, QObject *parent ) :
     QObject( parent ),
-    m_appInterface( appInterface )
+    m_appInterface( appInterface ),
+	m_controller( nullptr )
 {
    
 }
@@ -50,18 +53,22 @@ bool ccOculusControllerManager::setSession(ovrSession ovr, ovrControllerType con
 		return false;
 	}
 	if (connectedControllerType == ovrControllerType::ovrControllerType_Touch) {
-		ccLog::Print("Oculus Controller connected!");
-		return true;
+		m_controller = new ccOculusTouch(m_appInterface, m_ovrSession);
 	}
 	else {
 		ccLog::Error("Controller type not supported!");
 		return false;
 	}
+
+	m_controller->initController();
+	return true;
 }
 
 void ccOculusControllerManager::onUpdateRequest()
 {
-	ccLog::Print("Update");
+	if (m_controller) {
+		m_controller->update();
+	}
 }
 
 void ccOculusControllerManager::enableDevice(bool state, bool silent)

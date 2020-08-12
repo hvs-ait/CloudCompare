@@ -18,26 +18,17 @@
 #ifndef CC_OOCULUS_TOUCH
 #define CC_OOCULUS_TOUCH
 
-#include <QObject>
 #include "oculus/ccOculus.h"
+#include "ccOculusController.h"
 
-class QAction;
-class QMenu;
-
-class ccMainAppInterface;
-
-
-class ccOculusTouch : public QObject
+class ccOculusTouch : public ccOculusController
 {
-	Q_OBJECT
-
 public:
-	ccOculusTouch( ccMainAppInterface *appInterface, QObject *parent );
-	~ccOculusTouch();
+	ccOculusTouch(ccMainAppInterface *appInterface, ovrSession ovrSession) : 
+		ccOculusController(appInterface, ovrSession) {}
 
-    
-	ccMainAppInterface *m_appInterface;
-    ovrSession m_ovrSession;
+	void initController() override;
+	void update() override;
 };
 
 #endif

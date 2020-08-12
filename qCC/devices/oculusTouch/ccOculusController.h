@@ -15,8 +15,8 @@
 //#                                                                        #
 //##########################################################################
 
-#ifndef CC_OOCULUS_CONTROLLER
-#define CC_OOCULUS_CONTROLLER
+#ifndef CC_OCULUS_CONTROLLER
+#define CC_OCULUS_CONTROLLER
 
 #include <QObject>
 #include "oculus/ccOculus.h"
@@ -32,10 +32,12 @@ class ccOculusController : public QObject
 	Q_OBJECT
 
 public:
-	ccOculusController( ccMainAppInterface *appInterface, QObject *parent );
-	~ccOculusController();
-
+	ccOculusController( ccMainAppInterface *appInterface, ovrSession ovrSession );
+	virtual ~ccOculusController() = default;
+	virtual void initController() = 0;
+	virtual void update() = 0;
     
+private:
 	ccMainAppInterface *m_appInterface;
     ovrSession m_ovrSession;
 };

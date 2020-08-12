@@ -23,4 +23,8 @@
 
 #include "ccMainAppInterface.h"
 
-
+ccOculusController::ccOculusController(ccMainAppInterface *appInterface, ovrSession ovrSession):
+	m_appInterface(appInterface),
+	m_ovrSession(ovrSession)
+{
+}
