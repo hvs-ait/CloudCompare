@@ -55,6 +55,7 @@
 
 #ifdef CC_OCULUS_SUPPORT
 #include "oculus/ccOculus.h"
+#include "../../qCC/devices/oculusTouch/ccOculusControllerManager.h"
 static OculusHMD s_oculus;
 #endif //CC_OCULUS_SUPPORT
 
@@ -6653,8 +6654,8 @@ bool ccGLWindow::enableStereoMode(const StereoParams& params)
 		{
 			// Example use of ovr_Initialize() to specify a log callback.
 			// The log callback can be called from other threads until ovr_Shutdown() completes.
-			ovrInitParams params = {0, 0, nullptr, 0, 0, OVR_ON64("")};
-			params.LogCallback = LogCallback;
+			ovrInitParams ovrParams = {0, 0, nullptr, 0, 0, OVR_ON64("")};
+			ovrParams.LogCallback = LogCallback;
 			ovrResult result = ovr_Initialize(nullptr);
 			if (OVR_FAILURE(result))
 			{
@@ -6677,6 +6678,11 @@ bool ccGLWindow::enableStereoMode(const StereoParams& params)
 			ccLog::Print(QString("[Oculus] HMD '%0' detected (resolution: %1 x %2)").arg(desc.ProductName).arg(desc.Resolution.w).arg(desc.Resolution.h));
 
 			s_oculus.setSesion(session);
+			if (params.oculusControllerType != ovrControllerType::ovrControllerType_None && params.oculusTouchManager) {
+				if (params.oculusTouchManager->setSession(session, params.oculusControllerType)) {
+					connect(&m_autoRefreshTimer, &QTimer::timeout, params.oculusTouchManager, &ccOculusControllerManager::onUpdateRequest);
+				}
+			}
 			assert(s_oculus.session);
 		}
 

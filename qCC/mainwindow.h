@@ -35,6 +35,7 @@ class QMdiSubWindow;
 class QToolBar;
 class QToolButton;
 
+class ccOculusControllerManager;
 class cc3DMouseManager;
 class ccCameraParamEditDlg;
 class ccClippingBoxTool;
@@ -543,6 +544,9 @@ private:
 	//! Recent files menu
 	ccRecentFiles* m_recentFiles;
 	
+	//! Oculus Touch
+	ccOculusControllerManager* m_oculusTouchManager;
+
 	//! 3D mouse
 	cc3DMouseManager* m_3DMouseManager;
 

@@ -15,6 +15,9 @@
 //#                                                                        #
 //##########################################################################
 
+#ifndef CC_OCULUS
+#define CC_OCULUS
+
 //qCC_db
 #include <ccIncludeGL.h>
 #include <ccLog.h>
@@ -65,8 +68,8 @@ struct OculusHMD
 			ovrHmdDesc hmdDesc    = ovr_GetHmdDesc(session);
 			eyeRenderDesc[0]      = ovr_GetRenderDesc(session, ovrEye_Left, hmdDesc.DefaultEyeFov[0]);
 			eyeRenderDesc[1]      = ovr_GetRenderDesc(session, ovrEye_Right, hmdDesc.DefaultEyeFov[1]);
-			hmdToEyeViewOffset[0] = eyeRenderDesc[0].HmdToEyeOffset;
-			hmdToEyeViewOffset[1] = eyeRenderDesc[1].HmdToEyeOffset;
+			hmdToEyeViewOffset[0] = eyeRenderDesc[0].HmdToEyePose;
+			hmdToEyeViewOffset[1] = eyeRenderDesc[1].HmdToEyePose;
 		}
 	}
 
@@ -104,7 +107,9 @@ struct OculusHMD
 			desc.Height = bufferSize.h;
 			desc.MipLevels = 1;
 			desc.SampleCount = 1;
-			desc.StaticImage = ovrFalse;
+			desc.StaticImage = ovrFalse;
+
+			// Bugfix: https://forums.oculusvr.com/developer/discussion/comment/574559#Comment_574559
 			if (!ovr_CreateTextureSwapChainGL(session,
 				&desc,
 				&textureSwapChain) == ovrSuccess)
@@ -129,13 +134,15 @@ struct OculusHMD
 			assert(depthTextures.empty());
 
 			int textureCount = 0;
-			ovr_GetTextureSwapChainLength(session, textureSwapChain, &textureCount);			depthTextures.resize(textureCount, 0);
+			ovr_GetTextureSwapChainLength(session, textureSwapChain, &textureCount);
+			depthTextures.resize(textureCount, 0);
 			for (int i = 0; i < textureCount; ++i)
 			{
 				//set the color texture
 				{
 					unsigned int texId;
-					ovr_GetTextureSwapChainBufferGL(session, textureSwapChain, 0, &texId);					glFunc->glBindTexture(GL_TEXTURE_2D, texId);
+					ovr_GetTextureSwapChainBufferGL(session, textureSwapChain, 0, &texId);
+					glFunc->glBindTexture(GL_TEXTURE_2D, texId);
 					glFunc->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 					glFunc->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 					glFunc->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR/*GL_LINEAR_MIPMAP_LINEAR*/);
@@ -335,7 +342,7 @@ struct OculusHMD
 
 	//stereo pair rendering parameters
 	ovrEyeRenderDesc eyeRenderDesc[2];
-	ovrVector3f      hmdToEyeViewOffset[2];
+	ovrPosef      hmdToEyeViewOffset[2];
 	ovrLayerEyeFov   layer;
 
 	//! Last sensor position
@@ -383,3 +390,4 @@ static void OVR_CDECL LogCallback(uintptr_t /*userData*/, int level, const char*
 		break;
 	}
 }
+#endif

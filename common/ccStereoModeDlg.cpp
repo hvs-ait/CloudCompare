@@ -19,6 +19,10 @@
 
 #include "ui_stereoModeDlg.h"
 
+#ifdef CC_OCULUS_SUPPORT
+#include "oculus\ccOculus.h"
+#endif
+
 //system
 #include <cassert>
 
@@ -76,6 +80,7 @@ void ccStereoModeDlg::glassTypeChanged(int index)
 	case COMBO_INDEX_OCULUS:
 		m_ui->paramsGroupBox->setEnabled(false);
 		m_ui->warningTextEdit->setVisible(true);
+		m_ui->oculusControllerGroupBox->setEnabled(true);
 		m_ui->warningTextEdit->setText(
 			"To use the Oculus Rift make sure that:\
 			<ul>\
@@ -138,6 +143,14 @@ ccGLWindow::StereoParams ccStereoModeDlg::getParameters() const
 	params.eyeSeparation_mm = m_ui->eyeDistanceSpinBox->value();
 	params.stereoStrength = m_ui->stereoStrengthHorizontalSlider->sliderPosition();
 
+#ifdef CC_OCULUS_SUPPORT
+	if (m_ui->oculusTouchCheckBox->isChecked()) {
+		params.oculusControllerType = ovrControllerType::ovrControllerType_Touch;
+	}
+	else {
+		params.oculusControllerType = ovrControllerType::ovrControllerType_None;
+	}
+#endif
 	return params;
 }
 

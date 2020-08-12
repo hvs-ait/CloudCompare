@@ -32,6 +32,11 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../common ${CMAKE_CURRENT_BINARY_DI
 add_subdirectory( db_tree )
 add_subdirectory( pluginManager )
 
+# Oculus touch support
+if ( ${OPTION_USE_OCULUS_SDK} )
+	add_subdirectory( devices/oculusTouch )
+endif()
+
 # 3DX support (3dConnexion devices)
 if ( ${OPTION_SUPPORT_3DCONNEXION_DEVICES} )
 	add_subdirectory( devices/3dConnexion )

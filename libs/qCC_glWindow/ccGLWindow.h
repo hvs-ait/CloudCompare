@@ -38,6 +38,10 @@
 #include <QOpenGLWidget>
 #endif
 
+#ifdef CC_OCULUS_SUPPORT
+#include "../../qCC/devices/oculusTouch/ccOculusControllerManager.h"
+#endif
+
 //system
 #include <list>
 #include <unordered_set>
@@ -588,6 +592,12 @@ public: //stereo mode
 		int eyeSeparation_mm;
 		int stereoStrength;
 		GlassType glassType;
+
+#ifdef CC_OCULUS_SUPPORT
+		ccOculusControllerManager* oculusTouchManager;
+		ovrControllerType oculusControllerType;
+#endif
+
 	};
 
 	//! Enables stereo display mode

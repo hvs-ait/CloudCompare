@@ -129,6 +129,11 @@
 #include "db_tree/ccDBRoot.h"
 #include "pluginManager/ccPluginUIManager.h"
 
+//Oculus Touch handler
+#ifdef CC_OCULUS_SUPPORT
+#include "devices/oculusTouch/ccOculusControllerManager.h"
+#endif
+
 //3D mouse handler
 #ifdef CC_3DXWARE_SUPPORT
 #include "devices/3dConnexion/cc3DMouseManager.h"
@@ -184,6 +189,7 @@ MainWindow::MainWindow()
 	, m_ccRoot(nullptr)
 	, m_uiFrozen(false)
 	, m_recentFiles(new ccRecentFiles(this))
+	, m_oculusTouchManager(nullptr)
 	, m_3DMouseManager(nullptr)
 	, m_gamepadManager(nullptr)
 	, m_viewModePopupButton(nullptr)
@@ -413,6 +419,11 @@ void MainWindow::decreasePointSize()
 
 void MainWindow::setupInputDevices()
 {
+
+#ifdef CC_OCULUS_SUPPORT
+	m_oculusTouchManager = new ccOculusControllerManager(this, this);
+#endif
+
 #ifdef CC_3DXWARE_SUPPORT
 	m_3DMouseManager = new cc3DMouseManager( this, this );
 	m_UI->menuFile->insertMenu(m_UI->actionCloseAll, m_3DMouseManager->menu());
@@ -438,6 +449,11 @@ void MainWindow::destroyInputDevices()
 #ifdef CC_3DXWARE_SUPPORT
 	delete m_3DMouseManager;
 	m_3DMouseManager = nullptr;
+#endif
+
+#ifdef CC_OCULUS_SUPPORT
+	delete m_oculusTouchManager;
+	m_oculusTouchManager = nullptr;
 #endif
 }
 
@@ -9249,6 +9265,15 @@ void MainWindow::toggleActiveWindowStereoVision(bool state)
 				ccLog::Print(QString("[Stereo] F.O.V. forced to %1 deg.").arg(fov_deg));
 				win->setFov(fov_deg);
 			}
+
+#ifdef CC_OCULUS_SUPPORT
+			if (params.oculusControllerType != ovrControllerType::ovrControllerType_None) {
+				params.oculusTouchManager = m_oculusTouchManager;
+			}
+			else {
+				params.oculusTouchManager = nullptr;
+			}
+#endif
 
 			if (!win->enableStereoMode(params))
 			{
