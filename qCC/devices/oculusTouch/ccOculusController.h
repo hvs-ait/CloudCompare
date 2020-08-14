@@ -11,7 +11,7 @@
 //#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 //#  GNU General Public License for more details.                          #
 //#                                                                        #
-//#          COPYRIGHT: CloudCompare project                               #
+//#          COPYRIGHT: AIT-Austrian Institute of Technology               #
 //#                                                                        #
 //##########################################################################
 
@@ -32,14 +32,22 @@ class ccOculusController : public QObject
 	Q_OBJECT
 
 public:
-	ccOculusController( ccMainAppInterface *appInterface, ovrSession ovrSession );
+	ccOculusController(ccMainAppInterface *appInterface, ovrSession ovrSession):
+		m_appInterface(appInterface),
+		m_ovrSession(ovrSession) 
+	{}
 	virtual ~ccOculusController() = default;
 	virtual void initController() = 0;
 	virtual void update() = 0;
-    
-private:
+
+protected:
+	virtual void resetControls() = 0;
+	virtual void applyControls() = 0;
+
+protected:
 	ccMainAppInterface *m_appInterface;
     ovrSession m_ovrSession;
+	ovrControllerType m_controllerType;
 };
 
 #endif

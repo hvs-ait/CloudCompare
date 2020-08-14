@@ -9,7 +9,6 @@ set(header_list
 set(source_list
    ${source_list}
    ${CMAKE_CURRENT_SOURCE_DIR}/ccOculusControllerManager.cpp
-   ${CMAKE_CURRENT_SOURCE_DIR}/ccOculusController.cpp
    ${CMAKE_CURRENT_SOURCE_DIR}/ccOculusTouch.cpp
    PARENT_SCOPE
 )
