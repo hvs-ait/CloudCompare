@@ -39,11 +39,11 @@ bool ccOculusControllerManager::initializeController(ovrSession ovr, const ovrCo
 		ccLog::Warning("[OculusController] No Oculus Controller connected!");
 		return false;
 	}
-	if (controllerType != connectedControllerType) {
+	if (!(controllerType & connectedControllerType)) {
 		ccLog::Warning("[OculusController] Could not find matching controller!");
 		return false;
 	}
-	if (connectedControllerType == ovrControllerType::ovrControllerType_Touch) {
+	if (connectedControllerType & ovrControllerType::ovrControllerType_Touch) {
 		m_controller = std::make_unique<ccOculusTouch>(m_appInterface, m_ovrSession, rotationSpeed, translationSpeed);
 		return true;
 	}

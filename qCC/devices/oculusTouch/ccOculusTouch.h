@@ -37,13 +37,15 @@ public:
 		m_translationSpeed(translationSpeed / 10.0f)
 	{
 		m_controllerType = ovrControllerType::ovrControllerType_Touch;
-		handPositionOld = ovrVector3f{ 0, 0, 0 };
+		m_handPositionOld[0] = ovrVector3f{ 0, 0, 0 };
+		m_handPositionOld[1] = ovrVector3f{ 0, 0, 0 };
 		m_hasRightFist = false;
 		m_hasLeftFist = false;
 		m_buttonA = m_buttonB = m_buttonX = m_buttonY = false;
 		redraw = false;
 		m_timeStamp = ovr_GetTimeInSeconds();
 		resetControls();
+		ovr_RecenterTrackingOrigin(ovrSession);
 		ccLog::Print("Oculus Touch Controller connected!");
 	}
 
@@ -60,7 +62,9 @@ private:
 	void updateGestures(const ovrInputState& inputState);
 	void updateThumbSticks(const ovrInputState& inputState, double deltaTime);
 
-	void PreCalculateRotationBasedOnHandPosition(unsigned int hand);
+	void PreCalculateZRotationBasedOnHandPosition();
+	void PreCalculateXYRotationBasedOnHandPosition(unsigned int hand);
+	void PreCalculateTranslationBasedOnHandPosition(unsigned int hand);
 	void PreCalculateRotationBasedOnThumbStick(const ovrVector2f *thumbsticks, double deltaTime);
 	void PreCalculateTranslationBasedOnThumbStick(const ovrVector2f * thumbstick, double deltaTime);
 
@@ -74,7 +78,7 @@ private:
 	ccGLMatrixd m_rotation;
 	bool m_hasRotation;
 
-	ovrVector3f handPositionOld;
+	ovrVector3f m_handPositionOld[2];
 	bool m_hasRightFist;
 	bool m_hasLeftFist;
 
