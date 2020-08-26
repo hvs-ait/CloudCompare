@@ -6679,8 +6679,9 @@ bool ccGLWindow::enableStereoMode(const StereoParams& params)
 
 			s_oculus.setSesion(session);
 			if (params.oculusControllerType != ovrControllerType::ovrControllerType_None && params.oculusTouchManager) {
-				if (params.oculusTouchManager->setSession(session, params.oculusControllerType)) {
+				if (params.oculusTouchManager->initializeController(session, params.oculusControllerType, params.rotationSpeed, params.translationSpeed)) {
 					connect(&m_autoRefreshTimer, &QTimer::timeout, params.oculusTouchManager, &ccOculusControllerManager::onUpdateRequest);
+					ccLog::Print("[Oculus] Oculus controller connected");
 				}
 			}
 			assert(s_oculus.session);

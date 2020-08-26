@@ -18,38 +18,30 @@
 #ifndef CC_OCULUS_CONTROLLER_MANAGER
 #define CC_OCULUS_CONTROLLER_MANAGER
 
+// C++
+#include <memory>
+
+// Qt
 #include <QObject>
-#include "oculus/ccOculus.h"
+
+// CC
 #include "ccOculusController.h"
-
-class QAction;
-class QMenu;
-
-class ccMainAppInterface;
-
 
 class ccOculusControllerManager : public QObject
 {
 	Q_OBJECT
 
 public:
-	ccOculusControllerManager( ccMainAppInterface *appInterface, QObject *parent );
-	~ccOculusControllerManager();
-
-	bool setSession(ovrSession ovr, ovrControllerType controllerType);
+	explicit ccOculusControllerManager( ccMainAppInterface *appInterface, QObject *parent );
+	bool initializeController(ovrSession ovr, const ovrControllerType& controllerType, float rotationSpeed, float translationSpeed);
 
 public slots:
 	void onUpdateRequest();
 
 private:
-	void enableDevice(bool state, bool silent);
-	void releaseDevice();
-    
 	ccMainAppInterface *m_appInterface;
-
 	ovrSession m_ovrSession;
-
-	ccOculusController *m_controller;
+	std::unique_ptr<ccOculusController> m_controller;
 };
 
 #endif

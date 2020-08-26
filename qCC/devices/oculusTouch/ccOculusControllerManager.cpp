@@ -15,53 +15,42 @@
 //#                                                                        #
 //##########################################################################
 
-#include <QAction>
-#include <QMainWindow>
-#include <QMenu>
+// Qt
+#include <qsize.h>
 
-#include "ccOculusControllerManager.h"
-#include "ccGLWindow.h"
-
-#include "ccMainAppInterface.h"
-
+// Oculus OVR SDK
 #include "ccOculusTouch.h"
+
+// CC
+#include "ccOculusControllerManager.h"
 
 
 ccOculusControllerManager::ccOculusControllerManager( ccMainAppInterface *appInterface, QObject *parent ) :
     QObject( parent ),
     m_appInterface( appInterface ),
 	m_controller( nullptr )
-{
-   
-}
+{}
 
-ccOculusControllerManager::~ccOculusControllerManager()
-{
-    releaseDevice();
-}
-
-bool ccOculusControllerManager::setSession(ovrSession ovr, ovrControllerType controllerType)
+bool ccOculusControllerManager::initializeController(ovrSession ovr, const ovrControllerType& controllerType, float rotationSpeed, float translationSpeed)
 {
 	m_ovrSession = ovr;
 	unsigned connectedControllerType = ovr_GetConnectedControllerTypes(m_ovrSession);
-	if (controllerType == 0) {
-		ccLog::Warning("No Oculus Controller connected!");
+	if (controllerType == 0x0000) {
+		ccLog::Warning("[OculusController] No Oculus Controller connected!");
 		return false;
 	}
 	if (controllerType != connectedControllerType) {
-		ccLog::Warning("Connected controller does not match selected controller type!");
+		ccLog::Warning("[OculusController] Could not find matching controller!");
 		return false;
 	}
 	if (connectedControllerType == ovrControllerType::ovrControllerType_Touch) {
-		m_controller = new ccOculusTouch(m_appInterface, m_ovrSession);
+		m_controller = std::make_unique<ccOculusTouch>(m_appInterface, m_ovrSession, rotationSpeed, translationSpeed);
+		return true;
 	}
 	else {
-		ccLog::Error("Controller type not supported!");
+		ccLog::Error("[OculusController] Controller type is not supported!");
 		return false;
 	}
-
-	m_controller->initController();
-	return true;
 }
 
 void ccOculusControllerManager::onUpdateRequest()
@@ -69,14 +58,4 @@ void ccOculusControllerManager::onUpdateRequest()
 	if (m_controller) {
 		m_controller->update();
 	}
-}
-
-void ccOculusControllerManager::enableDevice(bool state, bool silent)
-{
-	ccLog::Print("Oculus Touch controllers initialized");
-}
-
-void ccOculusControllerManager::releaseDevice()
-{
-	
 }

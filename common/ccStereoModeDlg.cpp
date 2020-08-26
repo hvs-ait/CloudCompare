@@ -62,10 +62,12 @@ void ccStereoModeDlg::glassTypeChanged(int index)
 	case COMBO_INDEX_CYAN_RED:
 		m_ui->paramsGroupBox->setEnabled(true);
 		m_ui->warningTextEdit->setVisible(false);
+		m_ui->oculusControllerGroupBox->setVisible(false);
 		break;
 	case COMBO_INDEX_NV_VISION:
 		m_ui->paramsGroupBox->setEnabled(true);
 		m_ui->warningTextEdit->setVisible(true);
+		m_ui->oculusControllerGroupBox->setVisible(false);
 		m_ui->warningTextEdit->setHtml(
 			"To make this mode work properly make sure that:\
 			<ul>\
@@ -80,6 +82,7 @@ void ccStereoModeDlg::glassTypeChanged(int index)
 	case COMBO_INDEX_OCULUS:
 		m_ui->paramsGroupBox->setEnabled(false);
 		m_ui->warningTextEdit->setVisible(true);
+		m_ui->oculusControllerGroupBox->setVisible(true);
 		m_ui->oculusControllerGroupBox->setEnabled(true);
 		m_ui->warningTextEdit->setText(
 			"To use the Oculus Rift make sure that:\
@@ -93,6 +96,7 @@ void ccStereoModeDlg::glassTypeChanged(int index)
 	case COMBO_INDEX_GENERIC:
 		m_ui->paramsGroupBox->setEnabled(true);
 		m_ui->warningTextEdit->setVisible(true);
+		m_ui->oculusControllerGroupBox->setVisible(false);
 		m_ui->warningTextEdit->setHtml(
 			"This mode works better with 'Auto-pick rotation center' (see left toolbar).\
 			Note: the current 3D view will be automatically displayed in exclusive full screen mode (<i>press F11 to quit this mode</i>)"
@@ -100,7 +104,8 @@ void ccStereoModeDlg::glassTypeChanged(int index)
 		break;
 	default:
 		assert(false);
-		m_ui->paramsGroupBox->setEnabled(false);
+		m_ui->oculusControllerGroupBox->setEnabled(false);
+		m_ui->paramsGroupBox->setVisible(false);
 		m_ui->warningTextEdit->setVisible(false);
 		break;
 	}
@@ -146,6 +151,8 @@ ccGLWindow::StereoParams ccStereoModeDlg::getParameters() const
 #ifdef CC_OCULUS_SUPPORT
 	if (m_ui->oculusTouchCheckBox->isChecked()) {
 		params.oculusControllerType = ovrControllerType::ovrControllerType_Touch;
+		params.rotationSpeed = m_ui->rotationSpeedSlider->value();
+		params.translationSpeed = m_ui->translationSpeedSlider->value();
 	}
 	else {
 		params.oculusControllerType = ovrControllerType::ovrControllerType_None;

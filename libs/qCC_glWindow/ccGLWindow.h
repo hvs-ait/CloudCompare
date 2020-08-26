@@ -596,6 +596,8 @@ public: //stereo mode
 #ifdef CC_OCULUS_SUPPORT
 		ccOculusControllerManager* oculusTouchManager;
 		ovrControllerType oculusControllerType;
+		float rotationSpeed;
+		float translationSpeed;
 #endif
 
 	};

@@ -37,7 +37,6 @@ public:
 		m_ovrSession(ovrSession) 
 	{}
 	virtual ~ccOculusController() = default;
-	virtual void initController() = 0;
 	virtual void update() = 0;
 
 protected:

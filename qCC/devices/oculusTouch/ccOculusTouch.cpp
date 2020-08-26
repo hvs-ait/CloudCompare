@@ -25,74 +25,29 @@
 #include "ccMainAppInterface.h"
 #include <algorithm>
 
-void ccOculusTouch::initController()
-{
-	m_controllerType = ovrControllerType::ovrControllerType_Touch;
-	resetControls();
-	handPositionOld = ovrVector3f{ 0, 0, 0 };
-	m_hasLeftFistReleased = true;
-	m_hasRightFistReleased = true;
-	m_hasRightFist = false;
-	m_hasLeftFist = false;
-	ccLog::Print("Oculus Touch Controller connected!");
-}
 
 void ccOculusTouch::update()
 {
+	double actualTime = ovr_GetTimeInSeconds();
+	double deltaTime = actualTime - m_timeStamp;
+	m_timeStamp = actualTime;
+
+	m_viewParameters = m_appInterface->getActiveGLWindow()->getViewportParameters();
+
 	ovrInputState inputState;
 	ovr_GetInputState(m_ovrSession, m_controllerType, &inputState);
 
-	ovrVector2f *thumbsticks = inputState.Thumbstick;
+	updateGestures(inputState);
+	updateThumbSticks(inputState, deltaTime);
+	updateButtons(inputState);
 
-	m_hasLeftFist = (inputState.HandTrigger[LEFT_HAND] >= 0.8 && inputState.IndexTrigger[LEFT_HAND] >= 0.8);
-	m_hasRightFist = (inputState.HandTrigger[RIGHT_HAND] >= 0.8 && inputState.IndexTrigger[RIGHT_HAND] >= 0.8);
-	
-	if (m_hasLeftFist && m_hasRightFist) {
-		// Zoom - Not implemented
-		m_hasLeftFistReleased = m_hasRightFistReleased = false;
-	}
-
-	else if (m_hasLeftFist && !m_hasRightFist) {
-		if (m_hasLeftFistReleased) {
-			m_hasLeftFistReleased = false;
-			m_hasRightFistReleased = true;
-			handPositionOld = getHandPosition(LEFT_HAND);
-		}
-		m_hasRightFist = false;
-		rotateBasedOnHandPosition(LEFT_HAND);
-	}
-
-	else if (m_hasRightFist && !m_hasLeftFist) {
-		if (m_hasRightFistReleased) {
-			m_hasRightFistReleased = false;
-			m_hasLeftFistReleased = true;
-			handPositionOld = getHandPosition(RIGHT_HAND);
-		}
-		m_hasLeftFist = false;
-		rotateBasedOnHandPosition(RIGHT_HAND);
-	}
-
-	else {
-		m_hasRightFistReleased = m_hasLeftFistReleased = true;
-
-		CCVector3d rotation(-thumbsticks[LEFT_HAND].x * ROTATION_SPEED, -thumbsticks[LEFT_HAND].y * ROTATION_SPEED, 1);
-		rotation.normalize();
-
-		if (rotation.x != 0.0 || rotation.y != 0.0 || rotation.z != 0.0)
-		{
-			m_rotation = ccGLMatrixd::FromToRotation(CCVector3d(0, 0, 1), rotation);
-			m_hasRotation = true;
-		}
-	}
-
-	// Assign translations
-	m_translation = CCVector3(thumbsticks[RIGHT_HAND].x* TRANSLATION_SPEED, 0, thumbsticks[RIGHT_HAND].y* TRANSLATION_SPEED);
-	m_hasTranslation = (m_translation.x != 0 || m_translation.z != 0);
-
-
-	// Check if control applying is necessary
 	if (m_hasTranslation || m_hasRotation) {
 		applyControls();
+	}
+
+	if (redraw) {
+		m_appInterface->getActiveGLWindow()->redraw();
+		resetControls();
 	}
 }
 
@@ -103,26 +58,23 @@ void ccOculusTouch::applyControls()
 		m_appInterface->getActiveGLWindow()->rotateBaseViewMat(m_rotation);
 	}
 
-	const ccViewportParameters& viewParams = m_appInterface->getActiveGLWindow()->getViewportParameters();
-
 	if (m_hasTranslation) {
-		float scale = static_cast<float>(std::min(m_appInterface->getActiveGLWindow()->glWidth(), m_appInterface->getActiveGLWindow()->glHeight()) * viewParams.pixelSize);
+		float scale = static_cast<float>(std::min(m_appInterface->getActiveGLWindow()->glWidth(), m_appInterface->getActiveGLWindow()->glHeight()) * m_viewParameters.pixelSize);
 		scale /= m_appInterface->getActiveGLWindow()->computePerspectiveZoom();
 
-		float tanFOV = tan(static_cast<float>(viewParams.fov * CC_DEG_TO_RAD));
-		m_translation.x *= tanFOV;
-		m_translation.y *= tanFOV;
-
-		if (!viewParams.objectCenteredView)
+		if (!m_viewParameters.objectCenteredView)
 		{
 			scale = -scale;
 		}
-		m_appInterface->getActiveGLWindow()->moveCamera(-m_translation.x*scale, m_translation.y*scale, -m_translation.z*scale);
+
+		float tanFOV = tan(static_cast<float>(m_viewParameters.fov * CC_DEG_TO_RAD));
+		m_translation.x *= tanFOV;
+		m_translation.z *= tanFOV;
+
+		m_appInterface->getActiveGLWindow()->moveCamera(-m_translation.x * scale, 0, -m_translation.z * scale);
 	}
 
-	// Force GL redrawing and reset the internal controls
-	m_appInterface->getActiveGLWindow()->redraw();
-	resetControls();
+	redraw = true;
 }
 
 void ccOculusTouch::resetControls()
@@ -131,16 +83,79 @@ void ccOculusTouch::resetControls()
 	m_hasTranslation = false;
 	m_rotation.toIdentity();
 	m_hasRotation = false;
+	redraw = false;
+}
+
+void ccOculusTouch::updateButtons(const ovrInputState& inputState)
+{
+	const unsigned int buttonState = inputState.Buttons;
+
+	bool buttonA = buttonState & ovrButton_A;
+	bool buttonB = buttonState & ovrButton_B;
+	bool buttonX = buttonState & ovrButton_X;
+	bool buttonY = buttonState & ovrButton_Y;
+
+	if (buttonA && !m_buttonA) {
+		m_appInterface->decreasePointSize();
+	}
+	if (buttonB && !m_buttonB) {
+		m_appInterface->increasePointSize();
+	}
+	if (buttonX && !m_buttonX) {
+		m_appInterface->getActiveGLWindow()->setPerspectiveState(true, !m_viewParameters.objectCenteredView);
+	}
+	if (buttonY && !m_buttonY) {
+		m_appInterface->getActiveGLWindow()->zoomGlobal();
+	}
+
+	m_buttonA = buttonA;
+	m_buttonB = buttonB;
+	m_buttonX = buttonX;
+	m_buttonY = buttonY;
+}
+
+void ccOculusTouch::updateGestures(const ovrInputState& inputState)
+{
+	bool leftFist = (inputState.HandTrigger[c_left_hand] >= 0.8 && inputState.IndexTrigger[c_left_hand] >= 0.8);
+	bool rightFist = (inputState.HandTrigger[c_right_hand] >= 0.8 && inputState.IndexTrigger[c_right_hand] >= 0.8);
+
+	if (leftFist && rightFist) {
+		// Gesture noot implemented !!!
+	}
+
+	else if (leftFist && !rightFist) {
+		if (!m_hasLeftFist) {
+			handPositionOld = getHandPosition(c_left_hand);
+		}
+		PreCalculateRotationBasedOnHandPosition(c_left_hand);
+	}
+
+	else if (rightFist && !leftFist) {
+		if (!m_hasRightFist) {
+			handPositionOld = getHandPosition(c_right_hand);
+		}
+		PreCalculateRotationBasedOnHandPosition(c_right_hand);
+	}
+
+	m_hasLeftFist = leftFist;
+	m_hasRightFist = rightFist;
+}
+
+void ccOculusTouch::updateThumbSticks(const ovrInputState & inputState, double deltaTime)
+{
+	const ovrVector2f *thumbsticks = inputState.Thumbstick;
+	PreCalculateRotationBasedOnThumbStick(thumbsticks, deltaTime);
+	PreCalculateTranslationBasedOnThumbStick(thumbsticks, deltaTime);
 }
 
 ovrVector3f ccOculusTouch:: getHandPosition(unsigned int hand) {
-	ovrTrackedDeviceType deviceType[1] = { hand == LEFT_HAND ? ovrTrackedDeviceType::ovrTrackedDevice_LTouch : ovrTrackedDeviceType::ovrTrackedDevice_RTouch };
+	ovrTrackedDeviceType deviceType[1] = { hand == c_left_hand ? ovrTrackedDeviceType::ovrTrackedDevice_LTouch : ovrTrackedDeviceType::ovrTrackedDevice_RTouch };
 	ovrPoseStatef outputPose;
 	ovr_GetDevicePoses(m_ovrSession, deviceType, 1, 0, &outputPose);
 
 	return outputPose.ThePose.Position;
 }
-void ccOculusTouch::rotateBasedOnHandPosition(unsigned int hand)
+void ccOculusTouch::PreCalculateRotationBasedOnHandPosition(unsigned int hand)
 {
 	ovrVector3f handPosition = getHandPosition(hand);
 
@@ -149,8 +164,54 @@ void ccOculusTouch::rotateBasedOnHandPosition(unsigned int hand)
 		-(handPosition.y - handPositionOld.y) * 2,
 		1
 	);
+
+	if (m_viewParameters.objectCenteredView) {
+		rotation.x = rotation.x * -1;
+		rotation.y = rotation.y * -1;
+	}
+
 	rotation.normalize();
 	m_rotation = ccGLMatrixd::FromToRotation(CCVector3d(0, 0, 1), rotation);
 	m_hasRotation = true;
 	handPositionOld = handPosition;
+}
+
+void ccOculusTouch::PreCalculateRotationBasedOnThumbStick(const ovrVector2f *thumbsticks, double deltaTime)
+{
+
+	CCVector3d rotation(
+		-thumbsticks[c_left_hand].x * m_rotationSpeed * deltaTime,
+		-thumbsticks[c_left_hand].y * m_rotationSpeed * deltaTime,
+		1
+	);
+
+	if (m_viewParameters.objectCenteredView) {
+		rotation.x = rotation.x * -1;
+		rotation.y = rotation.y * -1;
+	}
+	rotation.normalize();
+
+	if (rotation.x != 0.0 || rotation.y != 0.0)
+	{
+		m_rotation = ccGLMatrixd::FromToRotation(CCVector3d(0, 0, 1), rotation);
+		m_hasRotation = true;
+	}
+}
+
+void ccOculusTouch::PreCalculateTranslationBasedOnThumbStick(const ovrVector2f * thumbsticks, double deltaTime)
+{
+	m_translation = CCVector3(
+		thumbsticks[c_right_hand].x * m_translationSpeed * deltaTime,
+		0, 
+		thumbsticks[c_right_hand].y * m_translationSpeed * deltaTime
+	);
+
+	const ccViewportParameters& viewParams = m_appInterface->getActiveGLWindow()->getViewportParameters();
+
+	if (!viewParams.objectCenteredView) {
+		m_translation.x = m_translation.x * -1;
+		m_translation.z = m_translation.z * -1;
+	}
+
+	m_hasTranslation = (m_translation.x != 0 || m_translation.z != 0);
 }
