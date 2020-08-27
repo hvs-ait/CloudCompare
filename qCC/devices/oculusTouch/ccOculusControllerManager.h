@@ -18,7 +18,7 @@
 #ifndef CC_OCULUS_CONTROLLER_MANAGER
 #define CC_OCULUS_CONTROLLER_MANAGER
 
-// C++
+// std
 #include <memory>
 
 // Qt
@@ -34,9 +34,6 @@ class ccOculusControllerManager : public QObject
 public:
 	explicit ccOculusControllerManager( ccMainAppInterface *appInterface, QObject *parent );
 	bool initializeController(ovrSession ovr, const ovrControllerType& controllerType, float rotationSpeed, float translationSpeed);
-
-public slots:
-	void onUpdateRequest();
 
 private:
 	ccMainAppInterface *m_appInterface;

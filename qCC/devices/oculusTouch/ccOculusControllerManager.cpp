@@ -44,18 +44,18 @@ bool ccOculusControllerManager::initializeController(ovrSession ovr, const ovrCo
 		return false;
 	}
 	if (connectedControllerType & ovrControllerType::ovrControllerType_Touch) {
+		if (
+			!(connectedControllerType & ovrControllerType::ovrControllerType_LTouch) ||
+			!(connectedControllerType & ovrControllerType::ovrControllerType_RTouch)
+			) {
+			ccLog::Warning("[OculusController] Could only find 1 connected Oculus Touch controller!");
+			return false;
+		}
 		m_controller = std::make_unique<ccOculusTouch>(m_appInterface, m_ovrSession, rotationSpeed, translationSpeed);
 		return true;
 	}
 	else {
-		ccLog::Error("[OculusController] Controller type is not supported!");
+		ccLog::Warning("[OculusController] Controller type is not supported!");
 		return false;
-	}
-}
-
-void ccOculusControllerManager::onUpdateRequest()
-{
-	if (m_controller) {
-		m_controller->update();
 	}
 }

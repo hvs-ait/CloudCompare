@@ -15,14 +15,12 @@
 //#                                                                        #
 //##########################################################################
 
-#include <QMenu>
+// Qt
+#include "qsize.h"
 
+// CC
 #include "ccOculusTouch.h"
 #include "ccGLWindow.h"
-
-#include "ccMainAppInterface.h"
-#include <algorithm>
-
 
 void ccOculusTouch::update()
 {
@@ -41,9 +39,6 @@ void ccOculusTouch::update()
 
 	if (m_hasTranslation || m_hasRotation) {
 		applyControls();
-	}
-
-	if (m_shouldRedraw) {
 		m_appInterface->getActiveGLWindow()->redraw();
 		resetControls();
 	}
@@ -70,8 +65,6 @@ void ccOculusTouch::applyControls()
 		}
 		m_appInterface->getActiveGLWindow()->moveCamera(-m_translation.x*scale, m_translation.y*scale, -m_translation.z*scale);
 	}
-
-	m_shouldRedraw = true;
 }
 
 void ccOculusTouch::resetControls()
@@ -81,7 +74,6 @@ void ccOculusTouch::resetControls()
 
 	m_hasTranslation = false;
 	m_hasRotation = false;
-	m_shouldRedraw = false;
 }
 
 void ccOculusTouch::updateButtons(const ovrInputState& inputState)
@@ -142,7 +134,7 @@ void ccOculusTouch::updateGestures(const ovrInputState& inputState)
 	m_hasRightFist = rightFist;
 }
 
-void ccOculusTouch::updateThumbSticks(const ovrInputState & inputState, const double& deltaTime)
+void ccOculusTouch::updateThumbSticks(const ovrInputState &inputState, double deltaTime)
 {
 	const ovrVector2f *thumbsticks = inputState.Thumbstick;
 	PreCalculateRotationBasedOnThumbStick(thumbsticks, deltaTime);
@@ -214,7 +206,7 @@ void ccOculusTouch::PreCalculateDoubleHandGestures()
 	m_fistPositionOld[c_leftHand] = handPosLeft;
 	m_fistPositionOld[c_rightHand] = handPosRight;
 }
-void ccOculusTouch::PreCalculateXYRotationBasedOnHandPosition(const unsigned int& hand)
+void ccOculusTouch::PreCalculateXYRotationBasedOnHandPosition(unsigned int hand)
 {
 	const ovrVector3f handPosition = getHandPosition(hand);
 
@@ -235,7 +227,7 @@ void ccOculusTouch::PreCalculateXYRotationBasedOnHandPosition(const unsigned int
 	m_fistPositionOld[hand] = handPosition;
 }
 
-void ccOculusTouch::PreCalculateTranslationBasedOnHandPosition(const unsigned int& hand)
+void ccOculusTouch::PreCalculateTranslationBasedOnHandPosition(unsigned int hand)
 {
 	const ovrVector3f handPosition = getHandPosition(hand);
 
@@ -249,7 +241,7 @@ void ccOculusTouch::PreCalculateTranslationBasedOnHandPosition(const unsigned in
 	m_hasTranslation = true;
 }
 
-void ccOculusTouch::PreCalculateRotationBasedOnThumbStick(const ovrVector2f *thumbsticks, const double& deltaTime)
+void ccOculusTouch::PreCalculateRotationBasedOnThumbStick(const ovrVector2f *thumbsticks, double deltaTime)
 {
 	if (thumbsticks[c_rightHand].x != 0 || thumbsticks[c_rightHand].y) {
 		CCVector3d rotation(
@@ -264,20 +256,20 @@ void ccOculusTouch::PreCalculateRotationBasedOnThumbStick(const ovrVector2f *thu
 	}
 }
 
-void ccOculusTouch::PreCalculateTranslationBasedOnThumbStick(const ovrVector2f * thumbsticks, const double& deltaTime)
+void ccOculusTouch::PreCalculateTranslationBasedOnThumbStick(const ovrVector2f * thumbsticks, double deltaTime)
 {
 	if (thumbsticks[c_leftHand].x != 0 || thumbsticks[c_leftHand].y != 0) {
 		m_translation = CCVector3(
 			thumbsticks[c_leftHand].x * m_translationSpeed * deltaTime,
 			0,
-			thumbsticks[c_leftHand].y * m_translationSpeed * deltaTime
+			thumbsticks[c_leftHand].y * m_translationSpeed * deltaTime * (-1)
 		);
 
 		m_hasTranslation = true;
 	}
 }
 
-double ccOculusTouch::getAngleBetween2dVectors(const float& aVec1, const float& bVec1, const float& aVec2, const float& bVec2, const bool& clockWiseRotation) const
+double ccOculusTouch::getAngleBetween2dVectors(float aVec1, float bVec1, float aVec2, float bVec2, bool clockWiseRotation) const
 {
 	CCVector2 vector1(aVec1, bVec1);
 	CCVector2 vector2(aVec2, bVec2);

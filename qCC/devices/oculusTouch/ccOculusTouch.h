@@ -18,22 +18,34 @@
 #ifndef CC_OCULUS_TOUCH
 #define CC_OCULUS_TOUCH
 
+// Qt
+#include "qtimer.h"
+
 // Oculus OVR SDK
 #include "oculus/ccOculus.h"
 
 // CC
 #include "ccGenericGLDisplay.h"
+#include "ccMainAppInterface.h"
 #include "ccOculusController.h"
 
 // std
 #include <math.h>
 
+/* ToDo:
+1. done: Use internal QTimer for updating state inside ccOculusTouch
+2. Toggle between different views when clicking the 'X' button
+3. Handle 'viewer-based' rendering mode
+4. Improve Oculus touch elements in Stereo dialog
+5. Rename Oculus controller parameters in StereoParameters
+*/
 constexpr unsigned int c_leftHand = 0;
 constexpr unsigned int c_rightHand = 1;
 constexpr float c_triggerDeadZone = 0.8f;
 
 class ccOculusTouch : public ccOculusController
 {
+
 public:
 	explicit ccOculusTouch(ccMainAppInterface *appInterface, ovrSession ovrSession, float rotationSpeed, float translationSpeed) :
 		ccOculusController(appInterface, ovrSession),
@@ -52,29 +64,32 @@ public:
 		m_timeStamp = ovr_GetTimeInSeconds();
 		resetControls();
 		ovr_RecenterTrackingOrigin(ovrSession);
-		ccLog::Print("Oculus Touch Controller initialized!");
-	}
+		connect(&m_timer, &QTimer::timeout, this, &ccOculusTouch::update);
+		m_timer.start(0);
 
-	void update() override;
+		ccLog::Print("[OculusController] Oculus Touch Controllers initialized!");
+	}
 
 protected:
 	void applyControls() override;
 	void resetControls() override;
+signals:
+	void update() override;
 
 private:
 	ovrVector3f getHandPosition(unsigned int hand);
 
 	void updateButtons(const ovrInputState& inputState);
 	void updateGestures(const ovrInputState& inputState);
-	void updateThumbSticks(const ovrInputState& inputState, const double& deltaTime);
+	void updateThumbSticks(const ovrInputState& inputState, double deltaTime);
 
 	void PreCalculateDoubleHandGestures();
-	void PreCalculateXYRotationBasedOnHandPosition(const unsigned int& hand);
-	void PreCalculateTranslationBasedOnHandPosition(const unsigned int& hand);
-	void PreCalculateRotationBasedOnThumbStick(const ovrVector2f *thumbsticks, const double& deltaTime);
-	void PreCalculateTranslationBasedOnThumbStick(const ovrVector2f *thumbstick, const double& deltaTime);
+	void PreCalculateXYRotationBasedOnHandPosition(unsigned int hand);
+	void PreCalculateTranslationBasedOnHandPosition(unsigned int hand);
+	void PreCalculateRotationBasedOnThumbStick(const ovrVector2f *thumbsticks, double deltaTime);
+	void PreCalculateTranslationBasedOnThumbStick(const ovrVector2f *thumbstick, double deltaTime);
 
-	double getAngleBetween2dVectors(const float& aVec1, const float& bVec1, const float& aVec2, const float& bVec2, const bool& clockWiseRotation) const;
+	double getAngleBetween2dVectors(float aVec1, float bVec1, float aVec2, float bVec2, bool clockWiseRotation) const;
 
 private:
 	const float m_rotationSpeed;
@@ -95,11 +110,12 @@ private:
 	bool m_buttonAPressed;
 	bool m_buttonBPressed;
 
-	bool m_shouldRedraw;
-
 	ccViewportParameters m_viewParameters;
 
 	double m_timeStamp;
+
+	QTimer m_timer;
+
 };
 
 #endif

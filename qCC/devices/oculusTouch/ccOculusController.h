@@ -18,14 +18,13 @@
 #ifndef CC_OCULUS_CONTROLLER
 #define CC_OCULUS_CONTROLLER
 
-#include <QObject>
+// Oculus OVR SDK
 #include "oculus/ccOculus.h"
 
-class QAction;
-class QMenu;
+// Qt
+#include "qobject.h"
 
 class ccMainAppInterface;
-
 
 class ccOculusController : public QObject
 {
@@ -33,15 +32,17 @@ class ccOculusController : public QObject
 
 public:
 	ccOculusController(ccMainAppInterface *appInterface, ovrSession ovrSession):
+		QObject(),
 		m_appInterface(appInterface),
 		m_ovrSession(ovrSession) 
 	{}
 	virtual ~ccOculusController() = default;
-	virtual void update() = 0;
 
 protected:
 	virtual void resetControls() = 0;
 	virtual void applyControls() = 0;
+signals:
+	virtual void update() = 0;
 
 protected:
 	ccMainAppInterface *m_appInterface;
