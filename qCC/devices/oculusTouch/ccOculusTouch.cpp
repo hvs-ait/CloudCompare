@@ -92,10 +92,45 @@ void ccOculusTouch::updateButtons(const ovrInputState& inputState)
 		m_appInterface->increasePointSize();
 	}
 	if (buttonX && !m_buttonXPressed) {
-		//m_appInterface->getActiveGLWindow()->setPerspectiveState(true, !m_viewParameters.objectCenteredView);
+		switch (static_cast<ccOculusTouch::CC_VIEWS>(m_currentView)) {
+		case ccOculusTouch::CC_VIEWS::V3DCMD_VIEW_TOP:
+			m_appInterface->setView(CC_TOP_VIEW);
+			break;
+		case ccOculusTouch::CC_VIEWS::V3DCMD_VIEW_LEFT:
+			m_appInterface->setView(CC_LEFT_VIEW);
+			break;
+		case ccOculusTouch::CC_VIEWS::V3DCMD_VIEW_RIGHT:
+			m_appInterface->setView(CC_RIGHT_VIEW);
+			break;
+		case ccOculusTouch::CC_VIEWS::V3DCMD_VIEW_FRONT:
+			m_appInterface->setView(CC_FRONT_VIEW);
+			break;
+		case ccOculusTouch::CC_VIEWS::V3DCMD_VIEW_BOTTOM:
+			m_appInterface->setView(CC_BOTTOM_VIEW);
+			break;
+		case ccOculusTouch::CC_VIEWS::V3DCMD_VIEW_BACK:
+			m_appInterface->setView(CC_BACK_VIEW);
+			break;
+		case ccOculusTouch::CC_VIEWS::V3DCMD_VIEW_ISO1:
+			m_appInterface->setView(CC_ISO_VIEW_1);
+			break;
+		case ccOculusTouch::CC_VIEWS::V3DCMD_VIEW_ISO2:
+			m_appInterface->setView(CC_ISO_VIEW_2);
+			break;
+		}
+		if (++m_currentView == 9) {
+			m_currentView = 1;
+		}
 	}
 	if (buttonY && !m_buttonYPressed) {
-		m_appInterface->getActiveGLWindow()->zoomGlobal();
+		if (m_appInterface->getSelectedEntities().empty())
+		{
+			m_appInterface->setGlobalZoom();
+		}
+		else
+		{
+			m_appInterface->zoomOnSelectedEntities();
+		}
 	}
 
 	m_buttonAPressed = buttonA;

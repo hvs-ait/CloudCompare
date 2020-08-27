@@ -34,7 +34,7 @@
 
 /* ToDo:
 1. done: Use internal QTimer for updating state inside ccOculusTouch
-2. Toggle between different views when clicking the 'X' button
+2. done: Toggle between different views when clicking the 'X' button
 3. Handle 'viewer-based' rendering mode
 4. Improve Oculus touch elements in Stereo dialog
 5. Rename Oculus controller parameters in StereoParameters
@@ -56,7 +56,8 @@ public:
 		m_buttonAPressed(false),
 		m_buttonBPressed(false),
 		m_buttonXPressed(false),
-		m_buttonYPressed(false)
+		m_buttonYPressed(false),
+		m_currentView(1)
 	{
 		m_controllerType = ovrControllerType::ovrControllerType_Touch;
 		m_fistPositionOld[0] = ovrVector3f{ 0, 0, 0 };
@@ -115,6 +116,20 @@ private:
 	double m_timeStamp;
 
 	QTimer m_timer;
+
+	unsigned int m_currentView;
+
+	enum CC_VIEWS
+	{
+		V3DCMD_VIEW_TOP = 1,
+		V3DCMD_VIEW_LEFT = 2,
+		V3DCMD_VIEW_RIGHT = 3,
+		V3DCMD_VIEW_FRONT = 4,
+		V3DCMD_VIEW_BOTTOM = 5,
+		V3DCMD_VIEW_BACK = 6,
+		V3DCMD_VIEW_ISO1 = 7,
+		V3DCMD_VIEW_ISO2 = 8,
+	};
 
 };
 
