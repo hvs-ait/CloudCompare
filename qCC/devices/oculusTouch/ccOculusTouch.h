@@ -15,18 +15,22 @@
 //#                                                                        #
 //##########################################################################
 
-#ifndef CC_OOCULUS_TOUCH
-#define CC_OOCULUS_TOUCH
+#ifndef CC_OCULUS_TOUCH
+#define CC_OCULUS_TOUCH
 
+// Oculus OVR SDK
 #include "oculus/ccOculus.h"
-#include "ccOculusController.h"
+
+// CC
 #include "ccGenericGLDisplay.h"
+#include "ccOculusController.h"
+
+// std
 #include <math.h>
 
-constexpr unsigned int c_left_hand = 0;
-constexpr unsigned int c_right_hand = 1;
-//constexpr float TRANSLATION_SPEED = 1.0f; // in meter/sec
-//constexpr float ROTATION_SPEED = 0.34906585039887f; // in rad/sec -> approx 20 degree/sec
+constexpr unsigned int c_leftHand = 0;
+constexpr unsigned int c_rightHand = 1;
+constexpr float c_triggerDeadZone = 0.8f;
 
 class ccOculusTouch : public ccOculusController
 {
@@ -34,19 +38,21 @@ public:
 	explicit ccOculusTouch(ccMainAppInterface *appInterface, ovrSession ovrSession, float rotationSpeed, float translationSpeed) :
 		ccOculusController(appInterface, ovrSession),
 		m_rotationSpeed(rotationSpeed * M_PI / 180.0f),
-		m_translationSpeed(translationSpeed / 10.0f)
+		m_translationSpeed(translationSpeed / 10.0f),
+		m_hasLeftFist(false),
+		m_hasRightFist(false),
+		m_buttonAPressed(false),
+		m_buttonBPressed(false),
+		m_buttonXPressed(false),
+		m_buttonYPressed(false)
 	{
 		m_controllerType = ovrControllerType::ovrControllerType_Touch;
-		m_handPositionOld[0] = ovrVector3f{ 0, 0, 0 };
-		m_handPositionOld[1] = ovrVector3f{ 0, 0, 0 };
-		m_hasRightFist = false;
-		m_hasLeftFist = false;
-		m_buttonA = m_buttonB = m_buttonX = m_buttonY = false;
-		redraw = false;
+		m_fistPositionOld[0] = ovrVector3f{ 0, 0, 0 };
+		m_fistPositionOld[1] = ovrVector3f{ 0, 0, 0 };
 		m_timeStamp = ovr_GetTimeInSeconds();
 		resetControls();
 		ovr_RecenterTrackingOrigin(ovrSession);
-		ccLog::Print("Oculus Touch Controller connected!");
+		ccLog::Print("Oculus Touch Controller initialized!");
 	}
 
 	void update() override;
@@ -60,13 +66,15 @@ private:
 
 	void updateButtons(const ovrInputState& inputState);
 	void updateGestures(const ovrInputState& inputState);
-	void updateThumbSticks(const ovrInputState& inputState, double deltaTime);
+	void updateThumbSticks(const ovrInputState& inputState, const double& deltaTime);
 
-	void PreCalculateZRotationBasedOnHandPosition();
-	void PreCalculateXYRotationBasedOnHandPosition(unsigned int hand);
-	void PreCalculateTranslationBasedOnHandPosition(unsigned int hand);
-	void PreCalculateRotationBasedOnThumbStick(const ovrVector2f *thumbsticks, double deltaTime);
-	void PreCalculateTranslationBasedOnThumbStick(const ovrVector2f * thumbstick, double deltaTime);
+	void PreCalculateDoubleHandGestures();
+	void PreCalculateXYRotationBasedOnHandPosition(const unsigned int& hand);
+	void PreCalculateTranslationBasedOnHandPosition(const unsigned int& hand);
+	void PreCalculateRotationBasedOnThumbStick(const ovrVector2f *thumbsticks, const double& deltaTime);
+	void PreCalculateTranslationBasedOnThumbStick(const ovrVector2f *thumbstick, const double& deltaTime);
+
+	double getAngleBetween2dVectors(const float& aVec1, const float& bVec1, const float& aVec2, const float& bVec2, const bool& clockWiseRotation) const;
 
 private:
 	const float m_rotationSpeed;
@@ -78,16 +86,16 @@ private:
 	ccGLMatrixd m_rotation;
 	bool m_hasRotation;
 
-	ovrVector3f m_handPositionOld[2];
+	ovrVector3f m_fistPositionOld[2];
 	bool m_hasRightFist;
 	bool m_hasLeftFist;
 
-	bool m_buttonX;
-	bool m_buttonY;
-	bool m_buttonA;
-	bool m_buttonB;
+	bool m_buttonXPressed;
+	bool m_buttonYPressed;
+	bool m_buttonAPressed;
+	bool m_buttonBPressed;
 
-	bool redraw;
+	bool m_shouldRedraw;
 
 	ccViewportParameters m_viewParameters;
 
