@@ -53,6 +53,15 @@ protected slots:
 
 	//! Slot called when the glass type is modified
 	void glassTypeChanged(int);
+
+	//! Slot called when rotation speed slider is moved
+	void rotationSpeedChanged(int);
+
+	//! Slot called when translation speed slider is moved
+	void translationSpeedChanged(int);
+
+	//! Slot called when oculus controller checkbox is modified
+	void oculusControllerChanged(int);
 	
 private:
 	Ui::StereoModeDialog* m_ui;

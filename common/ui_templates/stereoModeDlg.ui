@@ -275,6 +275,9 @@ p, li { white-space: pre-wrap; }
          </item>
          <item>
           <widget class="QSlider" name="translationSpeedSlider">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -286,6 +289,25 @@ p, li { white-space: pre-wrap; }
            </property>
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="translationSpeedLabel">
+           <property name="font">
+            <font>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">margin-left:10px</string>
+           </property>
+           <property name="text">
+            <string>[meter/sec]</string>
+           </property>
+           <property name="margin">
+            <number>0</number>
            </property>
           </widget>
          </item>
@@ -304,6 +326,9 @@ p, li { white-space: pre-wrap; }
          </item>
          <item>
           <widget class="QSlider" name="rotationSpeedSlider">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
            <property name="minimum">
             <number>1</number>
            </property>
@@ -315,6 +340,22 @@ p, li { white-space: pre-wrap; }
            </property>
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="rotationSpeedLabel">
+           <property name="font">
+            <font>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">margin-left:10px</string>
+           </property>
+           <property name="text">
+            <string>[degree/sec]</string>
            </property>
           </widget>
          </item>

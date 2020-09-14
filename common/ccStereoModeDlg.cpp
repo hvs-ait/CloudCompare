@@ -44,6 +44,12 @@ ccStereoModeDlg::ccStereoModeDlg(QWidget* parent)
 	glassTypeChanged(m_ui->glassTypeComboBox->currentIndex());
 
 	connect(m_ui->glassTypeComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ccStereoModeDlg::glassTypeChanged);
+	connect(m_ui->rotationSpeedSlider, static_cast<void (QSlider::*)(int)>(&QSlider::valueChanged), this, &ccStereoModeDlg::rotationSpeedChanged);
+	connect(m_ui->translationSpeedSlider, static_cast<void (QSlider::*)(int)>(&QSlider::valueChanged), this, &ccStereoModeDlg::translationSpeedChanged);
+	connect(m_ui->oculusTouchCheckBox, static_cast<void (QCheckBox::*)(int)>(&QCheckBox::stateChanged), this, &ccStereoModeDlg::oculusControllerChanged);
+
+	rotationSpeedChanged(m_ui->rotationSpeedSlider->value());
+	translationSpeedChanged(m_ui->translationSpeedSlider->value());
 }
 
 ccStereoModeDlg::~ccStereoModeDlg()
@@ -202,4 +208,26 @@ void ccStereoModeDlg::setParameters(const ccGLWindow::StereoParams& params)
 bool ccStereoModeDlg::updateFOV() const
 {
 	return m_ui->glassTypeComboBox->currentIndex() != COMBO_INDEX_OCULUS && m_ui->autoFocalCheckBox->isChecked();
+}
+
+void ccStereoModeDlg::rotationSpeedChanged(int value)
+{
+	m_ui->rotationSpeedLabel->setText(QString("%1 [degree/sec]").arg(value));
+}
+
+void ccStereoModeDlg::translationSpeedChanged(int value)
+{
+	m_ui->translationSpeedLabel->setText(QString("%1 [meter/sec]").arg(value / 10.0));
+}
+
+void ccStereoModeDlg::oculusControllerChanged(int state)
+{
+	if (state == Qt::CheckState::Unchecked) {
+		m_ui->rotationSpeedSlider->setEnabled(false);
+		m_ui->translationSpeedSlider->setEnabled(false);
+	}
+	else {
+		m_ui->rotationSpeedSlider->setEnabled(true);
+		m_ui->translationSpeedSlider->setEnabled(true);
+	}
 }
