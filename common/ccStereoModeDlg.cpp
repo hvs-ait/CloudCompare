@@ -156,12 +156,12 @@ ccGLWindow::StereoParams ccStereoModeDlg::getParameters() const
 
 #ifdef CC_OCULUS_SUPPORT
 	if (m_ui->oculusTouchCheckBox->isChecked()) {
-		params.oculusControllerType = ovrControllerType::ovrControllerType_Touch;
-		params.rotationSpeed = m_ui->rotationSpeedSlider->value();
-		params.translationSpeed = m_ui->translationSpeedSlider->value();
+		params.oculusControllerParams.oculusControllerType = ovrControllerType::ovrControllerType_Touch;
+		params.oculusControllerParams.rotationSpeed = m_ui->rotationSpeedSlider->value();
+		params.oculusControllerParams.translationSpeed = m_ui->translationSpeedSlider->value();
 	}
 	else {
-		params.oculusControllerType = ovrControllerType::ovrControllerType_None;
+		params.oculusControllerParams.oculusControllerType = ovrControllerType::ovrControllerType_None;
 	}
 #endif
 	return params;

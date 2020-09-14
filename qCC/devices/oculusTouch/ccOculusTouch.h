@@ -36,8 +36,9 @@
 1. done: Use internal QTimer for updating state inside ccOculusTouch
 2. done: Toggle between different views when clicking the 'X' button
 3. Handle 'viewer-based' rendering mode
-4. Improve Oculus touch elements in Stereo dialog
-5. Rename Oculus controller parameters in StereoParameters
+4. done: Improve Oculus touch elements in Stereo dialog
+5. done: Rename Oculus controller parameters in StereoParameters
+6. Disable Oculus touch controller
 */
 constexpr unsigned int c_leftHand = 0;
 constexpr unsigned int c_rightHand = 1;

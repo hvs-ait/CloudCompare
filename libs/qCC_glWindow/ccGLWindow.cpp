@@ -6678,8 +6678,9 @@ bool ccGLWindow::enableStereoMode(const StereoParams& params)
 			ccLog::Print(QString("[Oculus] HMD '%0' detected (resolution: %1 x %2)").arg(desc.ProductName).arg(desc.Resolution.w).arg(desc.Resolution.h));
 
 			s_oculus.setSesion(session);
-			if (params.oculusControllerType != ovrControllerType::ovrControllerType_None && params.oculusTouchManager) {
-				if (!params.oculusTouchManager->initializeController(session, params.oculusControllerType, params.rotationSpeed, params.translationSpeed)) {
+			OculusControllerParams oculusParams = params.oculusControllerParams;
+			if (oculusParams.oculusControllerType != ovrControllerType::ovrControllerType_None && oculusParams.oculusTouchManager) {
+				if (!oculusParams.oculusTouchManager->initializeController(session, oculusParams.oculusControllerType, oculusParams.rotationSpeed, oculusParams.translationSpeed)) {
 					QMessageBox::critical(asWidget(), "Oculus", "Failed to initialize the Oculus controller");
 				}
 			}

@@ -9267,11 +9267,11 @@ void MainWindow::toggleActiveWindowStereoVision(bool state)
 			}
 
 #ifdef CC_OCULUS_SUPPORT
-			if (params.oculusControllerType != ovrControllerType::ovrControllerType_None) {
-				params.oculusTouchManager = m_oculusTouchManager;
+			if (params.oculusControllerParams.oculusControllerType != ovrControllerType::ovrControllerType_None) {
+				params.oculusControllerParams.oculusTouchManager = m_oculusTouchManager;
 			}
 			else {
-				params.oculusTouchManager = nullptr;
+				params.oculusControllerParams.oculusTouchManager = nullptr;
 			}
 #endif
 

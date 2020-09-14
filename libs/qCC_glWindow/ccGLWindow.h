@@ -569,6 +569,16 @@ public: //debug traces on screen
 
 public: //stereo mode
 
+
+	//! Oculus Controller parameters
+	struct OculusControllerParams
+	{
+		ccOculusControllerManager* oculusTouchManager;
+		ovrControllerType oculusControllerType;
+		float rotationSpeed;
+		float translationSpeed;
+	};
+
 	//! Seterovision parameters
 	struct StereoParams
 	{
@@ -594,10 +604,7 @@ public: //stereo mode
 		GlassType glassType;
 
 #ifdef CC_OCULUS_SUPPORT
-		ccOculusControllerManager* oculusTouchManager;
-		ovrControllerType oculusControllerType;
-		float rotationSpeed;
-		float translationSpeed;
+		OculusControllerParams oculusControllerParams;
 #endif
 
 	};
