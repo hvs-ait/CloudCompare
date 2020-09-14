@@ -34,6 +34,7 @@ class ccOculusControllerManager : public QObject
 public:
 	explicit ccOculusControllerManager( ccMainAppInterface *appInterface, QObject *parent );
 	bool initializeController(ovrSession ovr, const ovrControllerType& controllerType, float rotationSpeed, float translationSpeed);
+	void disableController();
 
 private:
 	ccMainAppInterface *m_appInterface;

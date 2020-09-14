@@ -59,3 +59,8 @@ bool ccOculusControllerManager::initializeController(ovrSession ovr, const ovrCo
 		return false;
 	}
 }
+
+void ccOculusControllerManager::disableController()
+{
+	m_controller.reset();
+}

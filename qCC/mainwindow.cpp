@@ -9208,6 +9208,7 @@ void MainWindow::toggleActiveWindowStereoVision(bool state)
 
 		if (isActive)
 		{
+			m_oculusTouchManager->disableController();
 			win->disableStereoMode();
 
 			if (	win->getStereoParams().glassType == ccGLWindow::StereoParams::NVIDIA_VISION
@@ -9306,6 +9307,7 @@ bool MainWindow::checkStereoMode(ccGLWindow* win)
 		{
 			win->toggleExclusiveFullScreen(false);
 		}
+		m_oculusTouchManager->disableController();
 		win->disableStereoMode();
 
 		if (QMessageBox::question(	this,
