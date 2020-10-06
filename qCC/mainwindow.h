@@ -58,6 +58,8 @@ class ccStdPluginInterface;
 class ccTracePolylineTool;
 
 struct dbTreeSelectionInfo;
+class ccOculusControllerManager;
+
 
 namespace Ui {
 	class MainWindow;
@@ -547,6 +549,9 @@ private:
 
 	//! Gamepad handler
 	ccGamepadManager* m_gamepadManager;
+
+	//! Oculus Touch
+	ccOculusControllerManager* m_oculusTouchManager;
 
 	//! View mode pop-up menu button
 	QToolButton* m_viewModePopupButton;

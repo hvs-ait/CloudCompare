@@ -140,6 +140,11 @@
 #include "ccGamepadManager.h"
 #endif
 
+// Oculus touch
+#ifdef CC_OCULUS_SUPPORT
+#include "ccOculusControllerManager.h"
+#endif
+
 #ifdef CC_CORE_LIB_USES_TBB
 #include <tbb/tbb_stddef.h>
 #endif
@@ -187,6 +192,7 @@ MainWindow::MainWindow()
 	, m_recentFiles(new ccRecentFiles(this))
 	, m_3DMouseManager(nullptr)
 	, m_gamepadManager(nullptr)
+	, m_oculusTouchManager(nullptr)
 	, m_viewModePopupButton(nullptr)
 	, m_pivotVisibilityPopupButton(nullptr)
 	, m_FirstShow(true)
@@ -427,6 +433,10 @@ void MainWindow::setupInputDevices()
 #if defined(CC_3DXWARE_SUPPORT) || defined(CC_GAMEPAD_SUPPORT)
 	m_UI->menuFile->insertSeparator(m_UI->actionCloseAll);
 #endif
+
+#ifdef CC_OCULUS_SUPPORT
+	m_oculusTouchManager = new ccOculusControllerManager(this, this);
+#endif
 }
 
 void MainWindow::destroyInputDevices()
@@ -439,6 +449,11 @@ void MainWindow::destroyInputDevices()
 #ifdef CC_3DXWARE_SUPPORT
 	delete m_3DMouseManager;
 	m_3DMouseManager = nullptr;
+#endif
+
+#ifdef CC_OCULUS_SUPPORT
+	delete m_oculusTouchManager;
+	m_oculusTouchManager = nullptr;
 #endif
 }
 
@@ -9288,6 +9303,7 @@ void MainWindow::toggleActiveWindowStereoVision(bool state)
 
 		if (isActive)
 		{
+			m_oculusTouchManager->disableController();
 			win->disableStereoMode();
 
 			if (	win->getStereoParams().glassType == ccGLWindow::StereoParams::NVIDIA_VISION
@@ -9360,6 +9376,27 @@ void MainWindow::toggleActiveWindowStereoVision(bool state)
 				m_UI->actionEnableStereo->setChecked(false);
 				m_UI->actionEnableStereo->blockSignals(false);
 			}
+			else {
+#ifdef CC_OCULUS_SUPPORT
+
+				auto session = win->getOvrSession();
+
+				if (session) {
+					ccGLWindow::OculusControllerParams oculusController = params.oculusController;
+					if (oculusController.oculusControllerType != ovrControllerType::ovrControllerType_None) {
+						bool controllerInitialized = m_oculusTouchManager->initializeController(
+							session,
+							oculusController.oculusControllerType,
+							oculusController.rotationSpeed,
+							oculusController.translationSpeed
+						);
+						if (!controllerInitialized) {
+							QMessageBox::critical(this, "Oculus", "Failed to initialize the Oculus controller");
+						}
+					}
+				}
+#endif
+			}
 		}
 		win->redraw();
 	}
@@ -9377,6 +9414,7 @@ bool MainWindow::checkStereoMode(ccGLWindow* win)
 		{
 			win->toggleExclusiveFullScreen(false);
 		}
+		m_oculusTouchManager->disableController();
 		win->disableStereoMode();
 
 		if (QMessageBox::question(	this,

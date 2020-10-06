@@ -40,6 +40,12 @@ ccStereoModeDlg::ccStereoModeDlg(QWidget* parent)
 	glassTypeChanged(m_ui->glassTypeComboBox->currentIndex());
 
 	connect(m_ui->glassTypeComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &ccStereoModeDlg::glassTypeChanged);
+	connect(m_ui->rotationSpeedSlider, static_cast<void (QSlider::*)(int)>(&QSlider::valueChanged), this, &ccStereoModeDlg::rotationSpeedChanged);
+	connect(m_ui->translationSpeedSlider, static_cast<void (QSlider::*)(int)>(&QSlider::valueChanged), this, &ccStereoModeDlg::translationSpeedChanged);
+	connect(m_ui->oculusTouchCheckBox, static_cast<void (QCheckBox::*)(int)>(&QCheckBox::stateChanged), this, &ccStereoModeDlg::oculusControllerChanged);
+
+	rotationSpeedChanged(m_ui->rotationSpeedSlider->value());
+	translationSpeedChanged(m_ui->translationSpeedSlider->value());
 }
 
 ccStereoModeDlg::~ccStereoModeDlg()
@@ -58,10 +64,12 @@ void ccStereoModeDlg::glassTypeChanged(int index)
 	case COMBO_INDEX_CYAN_RED:
 		m_ui->paramsGroupBox->setEnabled(true);
 		m_ui->warningTextEdit->setVisible(false);
+		m_ui->oculusControllerGroupBox->setVisible(false);
 		break;
 	case COMBO_INDEX_NV_VISION:
 		m_ui->paramsGroupBox->setEnabled(true);
 		m_ui->warningTextEdit->setVisible(true);
+		m_ui->oculusControllerGroupBox->setVisible(false);
 		m_ui->warningTextEdit->setHtml(
 			"To make this mode work properly make sure that:\
 			<ul>\
@@ -76,6 +84,8 @@ void ccStereoModeDlg::glassTypeChanged(int index)
 	case COMBO_INDEX_OCULUS:
 		m_ui->paramsGroupBox->setEnabled(false);
 		m_ui->warningTextEdit->setVisible(true);
+		m_ui->oculusControllerGroupBox->setVisible(true);
+		m_ui->oculusControllerGroupBox->setEnabled(true);
 		m_ui->warningTextEdit->setText(
 			"To use the Oculus Rift make sure that:\
 			<ul>\
@@ -88,6 +98,7 @@ void ccStereoModeDlg::glassTypeChanged(int index)
 	case COMBO_INDEX_GENERIC:
 		m_ui->paramsGroupBox->setEnabled(true);
 		m_ui->warningTextEdit->setVisible(true);
+		m_ui->oculusControllerGroupBox->setVisible(false);
 		m_ui->warningTextEdit->setHtml(
 			"This mode works better with 'Auto-pick rotation center' (see left toolbar).\
 			Note: the current 3D view will be automatically displayed in exclusive full screen mode (<i>press F11 to quit this mode</i>)"
@@ -95,6 +106,7 @@ void ccStereoModeDlg::glassTypeChanged(int index)
 		break;
 	default:
 		assert(false);
+		m_ui->oculusControllerGroupBox->setEnabled(false);
 		m_ui->paramsGroupBox->setEnabled(false);
 		m_ui->warningTextEdit->setVisible(false);
 		break;
@@ -137,6 +149,17 @@ ccGLWindow::StereoParams ccStereoModeDlg::getParameters() const
 	params.screenDistance_mm = m_ui->screenDiistanceSpinBox->value();
 	params.eyeSeparation_mm = m_ui->eyeDistanceSpinBox->value();
 	params.stereoStrength = m_ui->stereoStrengthHorizontalSlider->sliderPosition();
+
+#ifdef CC_OCULUS_SUPPORT
+	if (m_ui->oculusTouchCheckBox->isChecked()) {
+		params.oculusController.oculusControllerType = ovrControllerType::ovrControllerType_Touch;
+		params.oculusController.rotationSpeed = m_ui->rotationSpeedSlider->value();
+		params.oculusController.translationSpeed = m_ui->translationSpeedSlider->value();
+	}
+	else {
+		params.oculusController.oculusControllerType = ovrControllerType::ovrControllerType_None;
+	}
+#endif
 
 	return params;
 }
@@ -182,4 +205,26 @@ void ccStereoModeDlg::setParameters(const ccGLWindow::StereoParams& params)
 bool ccStereoModeDlg::updateFOV() const
 {
 	return m_ui->glassTypeComboBox->currentIndex() != COMBO_INDEX_OCULUS && m_ui->autoFocalCheckBox->isChecked();
+}
+
+void ccStereoModeDlg::rotationSpeedChanged(int value)
+{
+	m_ui->rotationSpeedLabel->setText(QString("%1 [degree/sec]").arg(value));
+}
+
+void ccStereoModeDlg::translationSpeedChanged(int value)
+{
+	m_ui->translationSpeedLabel->setText(QString("%1 [meter/sec]").arg(value / 10.0));
+}
+
+void ccStereoModeDlg::oculusControllerChanged(int state)
+{
+	if (state == Qt::CheckState::Unchecked) {
+		m_ui->rotationSpeedSlider->setEnabled(false);
+		m_ui->translationSpeedSlider->setEnabled(false);
+	}
+	else {
+		m_ui->rotationSpeedSlider->setEnabled(true);
+		m_ui->translationSpeedSlider->setEnabled(true);
+	}
 }

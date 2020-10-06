@@ -43,6 +43,10 @@
 #include <list>
 #include <unordered_set>
 
+#ifdef CC_OCULUS_SUPPORT
+#include "oculus\ccOculus.h"
+#endif
+
 class QOpenGLDebugMessage;
 class QOpenGLBuffer;
 
@@ -54,6 +58,7 @@ class ccHObject;
 class ccInteractor;
 class ccPolyline;
 class ccShader;
+
 
 struct HotZone;
 
@@ -71,7 +76,7 @@ class CCGLWINDOW_LIB_API ccGLWindow : public ccGLWindowParent, public ccGenericG
 	Q_OBJECT
 
 public:
-
+	
 	//! Picking mode
 	enum PICKING_MODE { NO_PICKING,
 						ENTITY_PICKING,
@@ -545,7 +550,17 @@ public: //debug traces on screen
 
 public: //stereo mode
 
-	//! Seterovision parameters
+#ifdef CC_OCULUS_SUPPORT
+	struct OculusControllerParams
+	{
+		ovrControllerType oculusControllerType;
+		float rotationSpeed;
+		float translationSpeed;
+	};
+#endif
+
+
+		//! Seterovision parameters
 	struct CCGLWINDOW_LIB_API StereoParams
 	{
 		StereoParams();
@@ -568,10 +583,18 @@ public: //stereo mode
 		int eyeSeparation_mm;
 		int stereoStrength;
 		GlassType glassType;
+#ifdef CC_OCULUS_SUPPORT
+		OculusControllerParams oculusController;
+#endif
 	};
 
 	//! Enables stereo display mode
 	bool enableStereoMode(const StereoParams& params);
+
+#ifdef CC_OCULUS_SUPPORT
+	//! Get the current OVR session
+	ovrSession getOvrSession();
+#endif
 
 	//! Disables stereo display mode
 	void disableStereoMode();

@@ -1,4 +1,3 @@
-#pragma once
 //##########################################################################
 //#                                                                        #
 //#                              CLOUDCOMPARE                              #
@@ -12,57 +11,44 @@
 //#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          #
 //#  GNU General Public License for more details.                          #
 //#                                                                        #
-//#          COPYRIGHT: EDF R&D / TELECOM ParisTech (ENST-TSI)             #
+//#          COPYRIGHT: AIT-Austrian Institute of Technology               #
 //#                                                                        #
 //##########################################################################
+#pragma once
+#ifndef CC_OCULUS_CONTROLLER
+#define CC_OCULUS_CONTROLLER
 
+// Oculus OVR SDK
+#include "oculus/ccOculus.h"
+
+// Qt
 #include "CCAppCommon.h"
+#include <QObject>
 
-//qCC_gl
-#include <ccGLWindow.h>
+class ccMainAppInterface;
 
-//Qt
-#include <QDialog>
-
-namespace Ui
-{
-	class StereoModeDialog;
-}
-
-//! Dialog to define the parameters of the stereo mode (for 3D views)
-class CCAPPCOMMON_LIB_API ccStereoModeDlg : public QDialog
+class ccOculusController : public QObject
 {
 	Q_OBJECT
 
 public:
-
-	//! Default constructor
-	explicit ccStereoModeDlg(QWidget* parent);
-	~ccStereoModeDlg() override;
-
-	//! Returns the current parameters
-	ccGLWindow::StereoParams getParameters() const;
-
-	//! Sets the current parameters
-	void setParameters(const ccGLWindow::StereoParams& params);
-
-	//! Returns whether the FOV should be updated or not
-	bool updateFOV() const;
+	ccOculusController(ccMainAppInterface *appInterface, ovrSession ovrSession):
+		QObject(),
+		m_appInterface(appInterface),
+		m_ovrSession(ovrSession) 
+	{}
+	virtual ~ccOculusController() = default;
 
 protected:
+	virtual void resetControls() = 0;
+	virtual void applyControls() = 0;
+signals:
+	virtual void update() = 0;
 
-	//! Slot called when the glass type is modified
-	void glassTypeChanged(int);
-
-	//! Slot called when rotation speed slider is moved
-	void rotationSpeedChanged(int);
-
-	//! Slot called when translation speed slider is moved
-	void translationSpeedChanged(int);
-
-	//! Slot called when oculus controller checkbox is modified
-	void oculusControllerChanged(int);
-	
-private:
-	Ui::StereoModeDialog* m_ui;
+protected:
+	ccMainAppInterface *m_appInterface;
+    ovrSession m_ovrSession;
+	ovrControllerType m_controllerType;
 };
+
+#endif

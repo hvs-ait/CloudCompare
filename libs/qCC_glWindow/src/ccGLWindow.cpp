@@ -6585,6 +6585,18 @@ bool ccGLWindow::enableStereoMode(const StereoParams& params)
 	return true;
 }
 
+#ifdef CC_OCULUS_SUPPORT
+#include <qthread.h>
+ovrSession ccGLWindow::getOvrSession() {
+	unsigned connectedControllerType = ovr_GetConnectedControllerTypes(s_oculus.session);
+	ccLog::Warning(QString("devices: %1").arg(connectedControllerType));
+	void* p = QThread::currentThreadId();
+	ccLog::Warning(QString::number((long long)p, 16));
+	return s_oculus.session;
+}
+#endif // CC_OCULUS_SUPPORT
+
+
 void ccGLWindow::disableStereoMode()
 {
 	if (m_stereoModeEnabled)
