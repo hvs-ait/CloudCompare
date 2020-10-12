@@ -1,3 +1,4 @@
+add_subdirectory( CCOculus )
 add_subdirectory( CCAppCommon)
 add_subdirectory( CCFbo )
 add_subdirectory( CCPluginStub )    # Must come before CCPluginAPI

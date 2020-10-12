@@ -24,14 +24,14 @@
 
 void ccOculusTouch::update()
 {
-	double actualTime = ovr_GetTimeInSeconds();
+	double actualTime = ovrGetTimeInSeconds();
 	double deltaTime = actualTime - m_timeStamp;
 	m_timeStamp = actualTime;
 
 	m_viewParameters = m_appInterface->getActiveGLWindow()->getViewportParameters();
 
 	ovrInputState inputState;
-	ovr_GetInputState(m_ovrSession, m_controllerType, &inputState);
+	ovrGetInputState(m_ovrSession, m_controllerType, &inputState);
 
 	updateGestures(inputState);
 	updateThumbSticks(inputState, deltaTime);
@@ -52,18 +52,6 @@ void ccOculusTouch::applyControls()
 	}
 
 	if (m_hasTranslation) {
-		/*float scale = static_cast<float>(std::min(m_appInterface->getActiveGLWindow()->glWidth(), m_appInterface->getActiveGLWindow()->glHeight()) * m_viewParameters.pixelSize);
-		scale /= m_appInterface->getActiveGLWindow()->computePerspectiveZoom();
-
-		const float tanFOV = tan(static_cast<float>(m_viewParameters.fov * CC_DEG_TO_RAD));
-		m_translation.x *= tanFOV;
-		m_translation.y *= tanFOV;
-
-		if (!m_viewParameters.objectCenteredView)
-		{
-			scale = -scale;
-		}
-		m_appInterface->getActiveGLWindow()->moveCamera(-m_translation.x*scale, m_translation.y*scale, -m_translation.z*scale);*/
 		if (CCCoreLib::GreaterThanEpsilon(fabs(m_translation.x))
 			|| CCCoreLib::GreaterThanEpsilon(fabs(m_translation.y))
 			|| CCCoreLib::GreaterThanEpsilon(fabs(m_translation.z)))
@@ -78,7 +66,7 @@ void ccOculusTouch::applyControls()
 			{
 				screenWidth3D = -screenWidth3D;
 			}
-			CCVector3d v(-m_translation.x * screenWidth3D, m_translation.y * screenWidth3D, -m_translation.z * screenWidth3D * screenWidth3D);
+			CCVector3d v(-m_translation.x, m_translation.y, -m_translation.z);
 			m_appInterface->getActiveGLWindow()->moveCamera(v);
 		}
 	}
@@ -196,7 +184,7 @@ void ccOculusTouch::updateThumbSticks(const ovrInputState &inputState, double de
 ovrVector3f ccOculusTouch:: getHandPosition(unsigned int hand) {
 	ovrTrackedDeviceType deviceType[1] = { hand == c_leftHand ? ovrTrackedDeviceType::ovrTrackedDevice_LTouch : ovrTrackedDeviceType::ovrTrackedDevice_RTouch };
 	ovrPoseStatef outputPose;
-	ovr_GetDevicePoses(m_ovrSession, deviceType, 1, 0, &outputPose);
+	ovrGetDevicePoses(m_ovrSession, deviceType, 1, 0, &outputPose);
 
 	return outputPose.ThePose.Position;
 }
@@ -263,8 +251,8 @@ void ccOculusTouch::PreCalculateXYRotationBasedOnHandPosition(unsigned int hand)
 	const ovrVector3f handPosition = getHandPosition(hand);
 
 	CCVector3d rotation(
-		-(handPosition.x - m_fistPositionOld[hand].x) * 2,
-		-(handPosition.y - m_fistPositionOld[hand].y) * 2,
+		-(handPosition.x - m_fistPositionOld[hand].x) * -2,
+		-(handPosition.y - m_fistPositionOld[hand].y) * -2,
 		1
 	);
 

@@ -593,7 +593,7 @@ public: //stereo mode
 
 #ifdef CC_OCULUS_SUPPORT
 	//! Get the current OVR session
-	ovrSession getOvrSession();
+	OculusHMD* getOvrSession();
 #endif
 
 	//! Disables stereo display mode

@@ -36,7 +36,7 @@ bool ccOculusControllerManager::initializeController(ovrSession ovr, const ovrCo
 	m_ovrSession = ovr;
 	ccLog::Warning(QString("%1").arg(m_ovrSession == nullptr));
 
-	unsigned connectedControllerType = ovr_GetConnectedControllerTypes(m_ovrSession);
+	unsigned connectedControllerType = ovrGetConnectedControllerTypes(m_ovrSession);
 	ccLog::Warning(QString("%1, %2").arg(controllerType).arg(connectedControllerType));
 
 	if (connectedControllerType == 0x0000) {

@@ -142,7 +142,9 @@
 
 // Oculus touch
 #ifdef CC_OCULUS_SUPPORT
+#include "CCOculus.h"
 #include "ccOculusControllerManager.h"
+#include "ccOculusWrapper.h"
 #endif
 
 #ifdef CC_CORE_LIB_USES_TBB
@@ -9378,14 +9380,15 @@ void MainWindow::toggleActiveWindowStereoVision(bool state)
 			}
 			else {
 #ifdef CC_OCULUS_SUPPORT
-
 				auto session = win->getOvrSession();
+				unsigned connectedControllerType = ovrGetConnectedControllerTypes(session->session);
+				ccLog::Warning(QString("devices: %1").arg(connectedControllerType));
 
 				if (session) {
 					ccGLWindow::OculusControllerParams oculusController = params.oculusController;
 					if (oculusController.oculusControllerType != ovrControllerType::ovrControllerType_None) {
 						bool controllerInitialized = m_oculusTouchManager->initializeController(
-							session,
+							session->session,
 							oculusController.oculusControllerType,
 							oculusController.rotationSpeed,
 							oculusController.translationSpeed

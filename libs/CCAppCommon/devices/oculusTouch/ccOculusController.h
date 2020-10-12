@@ -19,7 +19,7 @@
 #define CC_OCULUS_CONTROLLER
 
 // Oculus OVR SDK
-#include "oculus/ccOculus.h"
+#include "ccOculusWrapper.h"
 
 // Qt
 #include "CCAppCommon.h"

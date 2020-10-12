@@ -22,8 +22,7 @@
 #include "qtimer.h"
 
 // Oculus OVR SDK
-#include "oculus/ccOculus.h"
-
+#include "ccOculusWrapper.h"
 // CC
 #include "ccGenericGLDisplay.h"
 #include "ccMainAppInterface.h"

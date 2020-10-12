@@ -1890,13 +1890,13 @@ void ccGLWindow::fullRenderingPass(CC_DRAW_CONTEXT& CONTEXT, RenderingParams& re
 			if (renderingParams.passIndex == MONO_OR_LEFT_RENDERING_PASS)
 			{
 				//Get both eye poses simultaneously, with IPD offset already included.
-				double displayMidpointSeconds = ovr_GetPredictedDisplayTime(s_oculus.session, 0);
+				double displayMidpointSeconds = ovrGetPredictedDisplayTime(s_oculus.session, 0);
 				//Query the HMD for the current tracking state.
-				ovrTrackingState hmdState = ovr_GetTrackingState(s_oculus.session, displayMidpointSeconds, ovrTrue);
+				ovrTrackingState hmdState = ovrGetTrackingState(s_oculus.session, displayMidpointSeconds, ovrTrue);
 				if (hmdState.StatusFlags & (ovrStatus_OrientationTracked | ovrStatus_PositionTracked)) 
 				{
 					//compute the eye positions
-					ovr_CalcEyePoses(hmdState.HeadPose.ThePose, s_oculus.hmdToEyeViewOffset, s_oculus.layer.RenderPose);
+					ovrCalcEyePoses(hmdState.HeadPose.ThePose, s_oculus.hmdToEyeViewOffset, s_oculus.layer.RenderPose);
 					s_oculus.hasLastOVRPos = true;
 				}
 				else
@@ -1906,10 +1906,10 @@ void ccGLWindow::fullRenderingPass(CC_DRAW_CONTEXT& CONTEXT, RenderingParams& re
 
 				//Increment to use next texture, just before writing
 				int currentIndex = 0;
-				ovr_GetTextureSwapChainCurrentIndex(s_oculus.session, s_oculus.textureSwapChain, &currentIndex);
+				ovrGetTextureSwapChainCurrentIndex(s_oculus.session, s_oculus.textureSwapChain, &currentIndex);
 
 				unsigned int colorTexID = 0;
-				ovr_GetTextureSwapChainBufferGL(s_oculus.session, s_oculus.textureSwapChain, currentIndex, &colorTexID);
+				ovrGetTextureSwapChainBufferGL(s_oculus.session, s_oculus.textureSwapChain, currentIndex, &colorTexID);
 				s_oculus.fbo->attachColor(colorTexID);
 
 				GLuint depthTexID = s_oculus.depthTextures[currentIndex];
@@ -2201,12 +2201,12 @@ void ccGLWindow::fullRenderingPass(CC_DRAW_CONTEXT& CONTEXT, RenderingParams& re
 #ifdef CC_OCULUS_SUPPORT
 	if (oculusMode && s_oculus.session && renderingParams.passIndex == RIGHT_RENDERING_PASS)
 	{
-		ovr_CommitTextureSwapChain(s_oculus.session, s_oculus.textureSwapChain);
+		ovrCommitTextureSwapChain(s_oculus.session, s_oculus.textureSwapChain);
 		
 		// Submit frame
 		ovrLayerHeader* layers = &s_oculus.layer.Header;
 		//glFunc->glEnable(GL_FRAMEBUFFER_SRGB);
-		ovrResult result = ovr_SubmitFrame(s_oculus.session, 0, nullptr, &layers, 1);
+		ovrResult result = ovrSubmitFrame(s_oculus.session, 0, nullptr, &layers, 1);
 		//glFunc->glDisable(GL_FRAMEBUFFER_SRGB);
 
 		if (s_oculus.mirror.texture)
@@ -6461,7 +6461,7 @@ bool ccGLWindow::enableStereoMode(const StereoParams& params)
 			// The log callback can be called from other threads until ovr_Shutdown() completes.
 			ovrInitParams params = {0, 0, nullptr, 0, 0, OVR_ON64("")};
 			params.LogCallback = LogCallback;
-			ovrResult result = ovr_Initialize(nullptr);
+			ovrResult result = ovrInitialize(nullptr);
 			if (OVR_FAILURE(result))
 			{
 				QMessageBox::critical(asWidget(), "Oculus", "Failed to initialize the Oculus SDK (ovr_Initialize)");
@@ -6470,16 +6470,16 @@ bool ccGLWindow::enableStereoMode(const StereoParams& params)
 
 			ovrGraphicsLuid luid;
 			ovrSession session;
-			result = ovr_Create(&session, &luid);
+			result = ovrCreate(&session, &luid);
 			if (OVR_FAILURE(result))
 			{
 				QMessageBox::critical(asWidget(), "Oculus", "Failed to initialize the Oculus SDK (ovr_Create)");
-				ovr_Shutdown();
+				ovrShutdown();
 				return false;
 			}
 
 			//get device description
-			ovrHmdDesc desc = ovr_GetHmdDesc(s_oculus.session);
+			ovrHmdDesc desc = ovrGetHmdDesc(s_oculus.session);
 			ccLog::Print(QString("[Oculus] HMD '%0' detected (resolution: %1 x %2)").arg(desc.ProductName).arg(desc.Resolution.w).arg(desc.Resolution.h));
 
 			s_oculus.setSesion(session);
@@ -6507,7 +6507,7 @@ bool ccGLWindow::enableStereoMode(const StereoParams& params)
 
 			//reset tracking
 			s_oculus.hasLastOVRPos = false;
-			ovr_RecenterTrackingOrigin(s_oculus.session);
+			ovrRecenterTrackingOrigin(s_oculus.session);
 		}
 
 		displayNewMessage("Look into your headset", ccGLWindow::SCREEN_CENTER_MESSAGE, false, 3600);
@@ -6586,13 +6586,12 @@ bool ccGLWindow::enableStereoMode(const StereoParams& params)
 }
 
 #ifdef CC_OCULUS_SUPPORT
-#include <qthread.h>
-ovrSession ccGLWindow::getOvrSession() {
-	unsigned connectedControllerType = ovr_GetConnectedControllerTypes(s_oculus.session);
+OculusHMD* ccGLWindow::getOvrSession() {
+	unsigned connectedControllerType = ovrGetConnectedControllerTypes(s_oculus.session);
 	ccLog::Warning(QString("devices: %1").arg(connectedControllerType));
-	void* p = QThread::currentThreadId();
-	ccLog::Warning(QString::number((long long)p, 16));
-	return s_oculus.session;
+	//bla();
+	//auto oculusWrapper = ccOculusWrapper::instance();
+	return &s_oculus;
 }
 #endif // CC_OCULUS_SUPPORT
 

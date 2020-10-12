@@ -14,7 +14,7 @@
 //#                   COPYRIGHT: CloudCompare project                      #
 //#                                                                        #
 //##########################################################################
-
+#pragma once
 //qCC_db
 #include <ccIncludeGL.h>
 #include <ccLog.h>
@@ -25,13 +25,13 @@
 //CCFbo
 #include <ccFrameBufferObject.h>
 
-//OVRlib
-#include <OVR_CAPI.h>
-#include <OVR_CAPI_GL.h>
+//OculusWrapper
 #include <Extras/OVR_Math.h>
+#include "ccOculusWrapper.h"
 
 //system
 #include <vector>
+#include <qsize.h>
 
 //Oculus SDK 'session'
 struct OculusHMD
@@ -62,11 +62,11 @@ struct OculusHMD
 		session = s;
 		if (session)
 		{
-			ovrHmdDesc hmdDesc    = ovr_GetHmdDesc(session);
-			eyeRenderDesc[0]      = ovr_GetRenderDesc(session, ovrEye_Left, hmdDesc.DefaultEyeFov[0]);
-			eyeRenderDesc[1]      = ovr_GetRenderDesc(session, ovrEye_Right, hmdDesc.DefaultEyeFov[1]);
-			hmdToEyeViewOffset[0] = eyeRenderDesc[0].HmdToEyeOffset;
-			hmdToEyeViewOffset[1] = eyeRenderDesc[1].HmdToEyeOffset;
+			ovrHmdDesc hmdDesc    = ovrGetHmdDesc(session);
+			eyeRenderDesc[0]      = ovrGetRenderDesc(session, ovrEye_Left, hmdDesc.DefaultEyeFov[0]);
+			eyeRenderDesc[1]      = ovrGetRenderDesc(session, ovrEye_Right, hmdDesc.DefaultEyeFov[1]);
+			hmdToEyeViewOffset[0] = eyeRenderDesc[0].HmdToEyePose;
+			hmdToEyeViewOffset[1] = eyeRenderDesc[1].HmdToEyePose;
 		}
 	}
 
@@ -78,9 +78,9 @@ struct OculusHMD
 			return false;
 		}
 
-		ovrHmdDesc hmdDesc = ovr_GetHmdDesc(session);
-		ovrSizei recommendedTex0Size = ovr_GetFovTextureSize(session, ovrEye_Left, hmdDesc.DefaultEyeFov[0], 1.0f);
-		ovrSizei recommendedTex1Size = ovr_GetFovTextureSize(session, ovrEye_Right, hmdDesc.DefaultEyeFov[1], 1.0f);
+		ovrHmdDesc hmdDesc = ovrGetHmdDesc(session);
+		ovrSizei recommendedTex0Size = ovrGetFovTextureSize(session, ovrEye_Left, hmdDesc.DefaultEyeFov[0], 1.0f);
+		ovrSizei recommendedTex1Size = ovrGetFovTextureSize(session, ovrEye_Right, hmdDesc.DefaultEyeFov[1], 1.0f);
 
 		//determine the rendering FOV and allocate the required ovrSwapTextureSet (see https://developer.oculus.com/documentation/pcsdk/latest/concepts/dg-render/)
 		ovrSizei bufferSize;
@@ -105,7 +105,7 @@ struct OculusHMD
 			desc.MipLevels = 1;
 			desc.SampleCount = 1;
 			desc.StaticImage = ovrFalse;
-			if (!ovr_CreateTextureSwapChainGL(session,
+			if (!ovrCreateTextureSwapChainGL(session,
 				&desc,
 				&textureSwapChain) == ovrSuccess)
 			{
@@ -129,13 +129,13 @@ struct OculusHMD
 			assert(depthTextures.empty());
 
 			int textureCount = 0;
-			ovr_GetTextureSwapChainLength(session, textureSwapChain, &textureCount);			depthTextures.resize(textureCount, 0);
+			ovrGetTextureSwapChainLength(session, textureSwapChain, &textureCount);			depthTextures.resize(textureCount, 0);
 			for (int i = 0; i < textureCount; ++i)
 			{
 				//set the color texture
 				{
 					unsigned int texId;
-					ovr_GetTextureSwapChainBufferGL(session, textureSwapChain, 0, &texId);					glFunc->glBindTexture(GL_TEXTURE_2D, texId);
+					ovrGetTextureSwapChainBufferGL(session, textureSwapChain, 0, &texId);					glFunc->glBindTexture(GL_TEXTURE_2D, texId);
 					glFunc->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 					glFunc->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 					glFunc->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR/*GL_LINEAR_MIPMAP_LINEAR*/);
@@ -211,11 +211,11 @@ struct OculusHMD
 			desc.Format = OVR_FORMAT_R8G8B8A8_UNORM_SRGB;
 
 			// Create mirror texture and an FBO used to copy mirror texture to back buffer
-			ovrResult result = ovr_CreateMirrorTextureGL(session, &desc, &mirror.texture);
+			ovrResult result = ovrCreateMirrorTextureGL(session, &desc, &mirror.texture);
 			if (OVR_SUCCESS(result))
 			{
 				// Configure the mirror read buffer
-				ovr_GetMirrorTextureBufferGL(session, mirror.texture, &mirror.textureID);
+				ovrGetMirrorTextureBufferGL(session, mirror.texture, &mirror.textureID);
 				mirror.size = QSize(w, h);
 
 				// And the FBO
@@ -246,7 +246,7 @@ struct OculusHMD
 		
 		if (mirror.texture)
 		{
-			ovr_DestroyMirrorTexture(session, mirror.texture);
+			ovrDestroyMirrorTexture(session, mirror.texture);
 			mirror.texture = nullptr;
 		}
 	}
@@ -259,13 +259,13 @@ struct OculusHMD
 			destroyTextureSet();
 
 			//then destroy the session
-			ovr_Destroy(session);
+			ovrDestroy(session);
 			session = 0;
 		}
 
 		if (autoShutdown)
 		{
-			ovr_Shutdown();
+			ovrShutdown();
 		}
 	}
 
@@ -280,7 +280,7 @@ struct OculusHMD
 
 		if (hasTextureSet)
 		{
-			ovr_DestroyTextureSwapChain(session, textureSwapChain);
+			ovrDestroyTextureSwapChain(session, textureSwapChain);
 			hasTextureSet = false;
 		}
 
@@ -335,7 +335,7 @@ struct OculusHMD
 
 	//stereo pair rendering parameters
 	ovrEyeRenderDesc eyeRenderDesc[2];
-	ovrVector3f      hmdToEyeViewOffset[2];
+	ovrPosef  hmdToEyeViewOffset[2];
 	ovrLayerEyeFov   layer;
 
 	//! Last sensor position
